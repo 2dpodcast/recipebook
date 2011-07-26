@@ -1,8 +1,6 @@
 from cookbook import app, models
 from flask import render_template, request, abort
 from werkzeug import check_password_hash
-from sqlalchemy.orm.exc import NoResultFound
-
 
 @app.route('/')
 def index():
@@ -27,11 +25,8 @@ def register():
 
 @app.route('/<username>')
 def user_recipes(username):
-    try:
-        user = models.User.query.filter_by(username=username).one()
-        return render_template('user_recipes.html')
-    except NoResultFound:
-        abort(404)
+    user = models.User.query.filter_by(username=username).first_or_404()
+    return render_template('user_recipes.html')
 
 
 @app.route('/<username>/<recipe>')
