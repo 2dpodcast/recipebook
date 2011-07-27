@@ -1,5 +1,6 @@
 #Default configuration
 SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/cookbook.sqlite'
+TEST_DATABASE_URI = 'sqlite:////tmp/cookbook_testing.sqlite'
 SQLALCHEMY_ECHO = True
 
 SECRET_KEY = '12345'
