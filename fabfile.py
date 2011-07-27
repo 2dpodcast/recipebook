@@ -1,9 +1,11 @@
 execfile('./env/bin/activate_this.py',
     dict(__file__='./env/bin/activate_this.py'))
 
-from cookbook import db, models
+from cookbook import db, models, create_app, config
 
 def devinit():
+    app = create_app(config)
+    app.test_request_context().push()
     db.drop_all()
     db.create_all()
     admin = models.User('admin@nonexistent.com','admin','admin',models.User.ADMIN)

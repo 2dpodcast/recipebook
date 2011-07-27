@@ -1,13 +1,16 @@
-from cookbook import app, models
-from flask import render_template, request, abort
+from cookbook import models
+from flask import render_template, request, abort, Blueprint
 from werkzeug import check_password_hash
 
-@app.route('/')
+recipes = Blueprint('recipes',__name__)
+errors = Blueprint('errors',__name__)
+
+@recipes.route('/')
 def index():
     return render_template('index.html')
 
 
-@app.route('/login')
+@recipes.route('/login')
 def login():
     if request.method == 'POST':
         return ''
@@ -15,7 +18,7 @@ def login():
         return render_template('login.html')
 
 
-@app.route('/register')
+@recipes.route('/register')
 def register():
     if request.method == 'POST':
         return ''
@@ -23,22 +26,24 @@ def register():
         return render_template('register.html')
 
 
-@app.route('/<username>')
+@recipes.route('/<username>')
 def user_recipes(username):
     user = models.User.query.filter_by(username=username).first_or_404()
     return render_template('user_recipes.html')
 
 
-@app.route('/<username>/<recipe>')
+@recipes.route('/<username>/<recipe>')
 def recipe(username,recipe):
     return render_template('recipe.html')
 
 
-@app.errorhandler(404)
 def not_found(error):
     return render_template('404.html'), 404
 
 
-@app.errorhandler(401)
-def denied(error):
+def access_denied(error):
     return render_template('401.html'), 401
+
+
+error_handlers = [(404,not_found),(401,access_denied)]
+
