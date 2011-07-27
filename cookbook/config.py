@@ -6,7 +6,7 @@ SECRET_KEY = '12345'
 DEBUG = True
 
 #Prevent url clashes with usernames
-DISABLED_USERNAMES = ['login','register','static','account','new','search']
+DISABLED_USERNAMES = ['login','register','static','account','new','search','p']
 
 #Override settings with local_config.py
 try:
