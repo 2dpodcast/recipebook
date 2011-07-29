@@ -2,6 +2,7 @@ execfile('./env/bin/activate_this.py',
     dict(__file__='./env/bin/activate_this.py'))
 
 from cookbook import db, models, create_app, config
+from fabric.api import *
 
 def devinit():
     app = create_app(config)
@@ -25,3 +26,5 @@ def devinit():
     db.session.add(recipe2)
     db.session.commit()
 
+def test():
+    local('python cookbook/test.py')
