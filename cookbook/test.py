@@ -31,9 +31,11 @@ class CookbookTestCase(unittest.TestCase):
 
     def test_add_recipe(self):
         ingredients = [
-            models.RecipeIngredient('Mince',500.0,'g'),
-            models.RecipeIngredient('Spaghetti',200.0,'g'),
+            models.Ingredient('Mince',500.0,'g'),
+            models.Ingredient('Spaghetti',200.0,'g'),
         ]
+        for ingredient in ingredients:
+            db.session.add(ingredient)
         recipe = models.Recipe('Test Recipe',1,ingredients,'A new test recipe')
         db.session.add(recipe)
         db.session.commit()

@@ -29,28 +29,10 @@ class User(db.Model):
             abort(500)
 
 
-class RecipeIngredient(db.Model):
-    __tablename__ = 'recipe_ingredients'
-    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredients.id'), primary_key=True)
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), primary_key=True)
-    ingredient = db.relationship("Ingredient", backref='recipe_association')
-    amount = db.Column(db.Float)
-    measure = db.Column(db.String(40))
-    group = db.Column(db.ForeignKey('ingredient_groups.id'))
-
-    def __init__(self,ingredient_name,amount,measure='',group=None):
-        self.ingredient = _new_or_existing_ingredient(ingredient_name)
-        self.amount = amount
-        self.measure = measure
-        self.group = group
-
-#recipe_ingredients = db.Table('recipe_ingredients',
-#        db.Column('ingredient_id', db.Integer, db.ForeignKey('ingredients.id')),
-#        db.Column('recipe_id', db.Integer, db.ForeignKey('recipes.id')),
-#        db.Column('amount', db.Float),
-#        db.Column('measure', db.String(40)),
-#        db.Column('group', db.ForeignKey('ingredient_groups.id')),
-#)
+recipe_tags = db.Table('recipe_tags',
+        db.Column('tag_id', db.Integer, db.ForeignKey('tags.id')),
+        db.Column('recipe_id', db.Integer, db.ForeignKey('recipes.id')),
+)
 
 
 class Recipe(db.Model):
@@ -63,9 +45,9 @@ class Recipe(db.Model):
     photo = db.Column(db.String)
     instructions = db.Column(db.Text)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    #ingredients = db.relationship('Ingredient',
-    #        secondary=recipe_ingredients, backref=db.backref('ingredient_recipes'))
-    ingredients = db.relationship(RecipeIngredient, backref='recipes')
+    tags = db.relationship('Tag',
+            secondary=recipe_tags, backref=db.backref('tag_recipes'))
+    ingredients = db.relationship('Ingredient', backref='recipes')
 
     def __init__(self, title, user_id, ingredients=None, description='', instructions='', photo=''):
         self.title = title
@@ -81,45 +63,28 @@ class Recipe(db.Model):
         self.photo = photo
 
 
-class CaseInsensitiveWord(Comparator):
-    "Hybrid value representing a lower case representation of a word."
-
-    def __init__(self, word):
-        if isinstance(word, basestring):
-            self.word = word.lower()
-        elif isinstance(word, CaseInsensitiveWord):
-            self.word = word.word
-        else:
-            self.word = db.func.lower(word)
-
-    def operate(self, op, other):
-        if not isinstance(other, CaseInsensitiveWord):
-            other = CaseInsensitiveWord(other)
-        return op(self.word, other.word)
-
-    def __clause_element__(self):
-        return self.word
-
-    def __str__(self):
-        return self.word
-
-    key = 'name'
-    "Label to apply to Query tuple results"
-
-
 class Ingredient(db.Model):
     __tablename__ = 'ingredients'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, unique=True)
+    name = db.Column(db.String)
+    amount = db.Column(db.Float)
+    measure = db.Column(db.String(40))
+    group_id = db.Column(db.Integer, db.ForeignKey('ingredient_groups.id'))
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'))
 
-    def __init__(self, name):
+    def __init__(self, name, amount, measure='', group=None):
         self.name = name
+        self.amount = amount
+        self.measure = measure
+        self.group = group
 
-    #Allow comparing case insensitive
-    @hybrid_property
-    def name_insensitive(self):
-        return CaseInsensitiveWord(self.name)
+
+class Tag(db.Model):
+    __tablename__ = 'tags'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
 
 
 class IngredientGroup(db.Model):
@@ -127,17 +92,6 @@ class IngredientGroup(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
-
-
-def _new_or_existing_ingredient(name):
-    """Return an existing ingredient that matches or create a new one"""
-    try:
-        ingredient = Ingredient.query.filter_by(name_insensitive=name).one()
-    except NoResultFound:
-        ingredient = Ingredient(name)
-        db.session.add(ingredient)
-        #don't commit now, that should be done elsewhere
-    return ingredient
 
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
