@@ -1,5 +1,24 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Hello world!</h1>
+<form action="{{ url_for('recipes.register') }}" method="POST">
+  {{ form.csrf }}
+  <p>{{ form.email.label }} {{ form.email(size=25) }}</p>
+  {% if form.email.errors %}
+  <ul class="errors">{% for error in form.email.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+  {% endif %}
+  <p>{{ form.username.label }} {{ form.username(size=25) }}</p>
+  {% if form.username.errors %}
+  <ul class="errors">{% for error in form.username.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+  {% endif %}
+  <p>{{ form.realname.label }} {{ form.realname(size=25) }}</p>
+  {% if form.realname.errors %}
+  <ul class="errors">{% for error in form.realname.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+  {% endif %}
+  <p>{{ form.password.label }} {{ form.password(size=25) }}</p>
+  {% if form.password.errors %}
+  <ul class="errors">{% for error in form.password.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+  {% endif %}
+  <p><input type="submit" value="Login"></p>
+</form>
 {% endblock content %}

@@ -8,8 +8,24 @@
 
   <body>
 
+  <header>
+  <p>{% if g.user %}
+    <a href="{{ url_for('recipes.logout') }}">Logout {{ g.user.username }}</a>
+  {% else %}
+    <a href="{{ url_for('recipes.register') }}">Register</a> &middot;
+    <a href="{{ url_for('recipes.login') }}">Login</a>
+  {% endif %}</p>
+  </header>
+
+  <div>
+
     {% block content %}
     {% endblock content %}
+
+  </div>
+
+  <footer>
+  </footer>
 
   </body>
 

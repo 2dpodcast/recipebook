@@ -1,5 +1,5 @@
 from recipebook import db
-from werkzeug import generate_password_hash
+from werkzeug import generate_password_hash, check_password_hash
 from sqlalchemy.orm.exc import NoResultFound
 import re
 from unicodedata import normalize
@@ -27,6 +27,9 @@ class User(db.Model):
             self.level = level
         else:
             abort(500)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
 
 
 recipe_tags = db.Table('recipe_tags',

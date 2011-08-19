@@ -1,29 +1,48 @@
-from recipebook import models
-from flask import render_template, request, abort, Blueprint
-from werkzeug import check_password_hash
+from recipebook import models, forms, db
+from flask import render_template, request, abort, Blueprint, g, session, redirect, url_for, flash
 
 recipes = Blueprint('recipes',__name__)
 errors = Blueprint('errors',__name__)
+
+@recipes.before_app_request
+def before_request():
+    """Check if user is logged in"""
+    g.user = None
+    if 'user_id' in session:
+        g.user = models.User.query.filter_by(id=session['user_id']).one()
+
 
 @recipes.route('/')
 def index():
     return render_template('index.html')
 
 
-@recipes.route('/login')
+@recipes.route('/login', methods=('GET','POST'))
 def login():
-    if request.method == 'POST':
-        return ''
-    else:
-        return render_template('login.html')
+    form = forms.Login(request.form)
+    if request.method == 'POST' and form.validate():
+        flash(u'Successfully logged in as %s' % form.user.username)
+        session['user_id'] = form.user.id
+        return redirect(url_for('recipes.index'))
+    return render_template('login.html', form=form)
 
 
-@recipes.route('/register')
+@recipes.route('/register', methods=('GET','POST'))
 def register():
-    if request.method == 'POST':
-        return ''
-    else:
-        return render_template('register.html')
+    form = forms.Register(request.form)
+    if request.method == 'POST' and form.validate():
+        user = models.User(form.email.data, form.username.data, form.password.data, models.User.USER)
+        user.realname = form.realname.data
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for('recipes.login'))
+    return render_template('register.html', form=form)
+
+
+@recipes.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('recipes.index'))
 
 
 @recipes.route('/<username>')
