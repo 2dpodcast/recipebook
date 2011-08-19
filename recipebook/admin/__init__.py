@@ -1,6 +1,6 @@
 from flask import Blueprint, session, abort
 
-from cookbook import models
+from recipebook import models
 
 admin = Blueprint('admin', __name__)
 
@@ -13,4 +13,4 @@ def restrict_to_admin():
     if user.level != models.User.ADMIN:
         abort(401)
 
-import cookbook.admin.views
+import recipebook.admin.views

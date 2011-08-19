@@ -1,9 +1,9 @@
 import os
 import unittest
 
-from cookbook import db, models, create_app, config
+from recipebook import db, models, create_app, config
 
-class CookbookTestCase(unittest.TestCase):
+class RecipebookTestCase(unittest.TestCase):
 
     def setUp(self):
         config.SQLALCHEMY_DATABASE_URI = config.TEST_DATABASE_URI

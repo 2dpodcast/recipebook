@@ -3,10 +3,10 @@ from flaskext.sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-import cookbook.models
+import recipebook.models
 
 def create_app(config):
-    app = Flask('cookbook')
+    app = Flask('recipebook')
 
     app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
     app.config['TEST_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
@@ -15,13 +15,13 @@ def create_app(config):
 
     db.init_app(app)
 
-    import cookbook.admin
-    import cookbook.views
+    import recipebook.admin
+    import recipebook.views
     app.register_blueprint(admin.admin, url_prefix='/administer')
     app.register_blueprint(views.recipes)
     app.register_blueprint(views.errors)
 
-    for eh in cookbook.views.error_handlers:
+    for eh in recipebook.views.error_handlers:
         app.register_error_handler(eh[0],eh[1])
 
     return app

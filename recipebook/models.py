@@ -1,4 +1,4 @@
-from cookbook import db
+from recipebook import db
 from werkzeug import generate_password_hash
 from sqlalchemy.orm.exc import NoResultFound
 import re

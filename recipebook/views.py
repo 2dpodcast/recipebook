@@ -1,4 +1,4 @@
-from cookbook import models
+from recipebook import models
 from flask import render_template, request, abort, Blueprint
 from werkzeug import check_password_hash
 

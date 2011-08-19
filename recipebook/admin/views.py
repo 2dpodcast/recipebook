@@ -1,6 +1,6 @@
 from flask import render_template
 
-from cookbook.admin import admin
+from recipebook.admin import admin
 
 @admin.route('/')
 def adminindex():
