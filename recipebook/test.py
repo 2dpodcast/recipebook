@@ -40,6 +40,7 @@ class RecipebookTestCase(unittest.TestCase):
         db.session.add(recipe)
         db.session.commit()
         assert(models.Recipe.query.get(1).title == 'Test Recipe')
+        assert(models.Recipe.query.get(1).ingredients[0].name == 'Mince')
 
 
 if __name__ == '__main__':
