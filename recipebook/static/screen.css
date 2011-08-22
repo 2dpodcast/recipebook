@@ -1,0 +1,44 @@
+article, section, aside, hgroup, nav, header, footer, figure, figcaption {
+  display: block;
+}
+
+body {
+  font-family: sans-serif;
+  color: #333333;
+  text-align: center;
+}
+
+#container {
+  margin: 0 auto;
+  width: 800px;
+  text-align: left;
+}
+
+/* Header */
+
+header {
+  display: block;
+  position: relative;
+  height: 120px;
+}
+
+header p {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+header h1 {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+}
+
+/* Forms */
+
+div.form_field {
+  width: 65%;
+  margin-bottom: 1em;
+}
+
+
