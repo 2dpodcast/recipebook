@@ -48,7 +48,7 @@ def logout():
 @recipes.route('/<username>')
 def user_recipes(username):
     user = models.User.query.filter_by(username=username).first_or_404()
-    return render_template('user_recipes.html')
+    return render_template('user_recipes.html', user=user, recipes=user.recipes.all())
 
 
 @recipes.route('/<username>/<recipe>')
