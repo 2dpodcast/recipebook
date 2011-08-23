@@ -43,4 +43,14 @@ class Register(Form):
             self.username.errors.append('Sorry, that user name is not allowed')
             return False
 
+        user = User.query.filter(User.username==self.username.data).first()
+        if user is not None:
+            self.username.errors.append('That user name is already taken')
+            return False
+
+        user = User.query.filter(User.email==self.email.data).first()
+        if user is not None:
+            self.username.errors.append('A user with that email address is already registered')
+            return False
+
         return True
