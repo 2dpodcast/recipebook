@@ -2,7 +2,8 @@
 
 {% block content %}
 {% for recipe in recipes %}<article>
-  <h2><a href="{{ recipe.url() }}">{{ recipe.title }}</a></h2>
+  <h2><a href="{{ url_for('.recipe', username=recipe.user.username, recipe_slug=recipe.titleslug) }}">{{ recipe.title }}</a></h2>
   {% if recipe.description %}<p>{{ recipe.description }}</p>{% endif %}
+  <p>Added by <a href="{{ url_for('.user_recipes', username=recipe.user.username) }}">{{ recipe.user.display_name() }}</a>.</p>
 </article>{% endfor %}
 {% endblock content %}

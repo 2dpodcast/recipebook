@@ -19,7 +19,7 @@ class User(db.Model):
     realname = db.Column(db.String)
     password = db.Column(db.String)
     level = db.Column(db.Integer)
-    recipes = db.relationship('Recipe', backref='users', lazy='dynamic')
+    recipes = db.relationship('Recipe', backref='user', lazy='dynamic')
 
     def __init__(self, email, username, password, level):
         self.email = email
@@ -55,7 +55,7 @@ class Recipe(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     tags = db.relationship('Tag',
             secondary=recipe_tags, backref=db.backref('tag_recipes'))
-    ingredients = db.relationship('Ingredient', backref='recipes')
+    ingredients = db.relationship('Ingredient', backref='recipe')
     date = db.Column(db.DateTime)
 
     def __init__(self, title, user_id, ingredients=None, description='', instructions='', photo=''):
@@ -77,10 +77,6 @@ class Recipe(db.Model):
 
     def html_instructions(self):
         return self.instructions
-
-    def url(self):
-        user = User.query.get(self.user_id)
-        return url_for('recipes.recipe', username=user.username, recipe_slug=self.titleslug)
 
 
 class Ingredient(db.Model):
