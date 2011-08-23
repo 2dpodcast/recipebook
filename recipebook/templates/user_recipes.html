@@ -7,7 +7,7 @@
   <p>{{ user.display_name() }} has not added any recipes yet.</p>
 {% else %}
   {% for recipe in recipes %}<article>
-    <h2><a href="{{ url_for(".recipe", username=user.username, recipe=recipe.titleslug) }}">{{ recipe.title }}</a></h2>
+    <h2><a href="{{ url_for(".recipe", username=user.username, recipe_slug=recipe.titleslug) }}">{{ recipe.title }}</a></h2>
     {% if recipe.description %}<p>{{ recipe.description }}</p>{% endif %}
   </article>{% endfor %}
 {% endif %}

@@ -68,6 +68,12 @@ class Recipe(db.Model):
         self.instructions = instructions
         self.photo = photo
 
+    def group_ingredients(self):
+        return ([], self.ingredients)
+
+    def html_instructions(self):
+        return self.instructions
+
 
 class Ingredient(db.Model):
     __tablename__ = 'ingredients'

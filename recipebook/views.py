@@ -51,9 +51,11 @@ def user_recipes(username):
     return render_template('user_recipes.html', user=user, recipes=user.recipes.all())
 
 
-@recipes.route('/<username>/<recipe>')
-def recipe(username,recipe):
-    return render_template('recipe.html')
+@recipes.route('/<username>/<recipe_slug>')
+def recipe(username,recipe_slug):
+    user = models.User.query.filter_by(username=username).first_or_404()
+    user_recipe = models.Recipe.query.filter(db.and_(models.Recipe.user_id==user.id,models.Recipe.titleslug==recipe_slug)).first_or_404()
+    return render_template('recipe.html', user=user, recipe=user_recipe)
 
 
 def not_found(error):

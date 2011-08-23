@@ -1,5 +1,32 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Hello world!</h1>
+<h1>{{ recipe.title }}</h1>
+
+{% if recipe.description %}<p> {{recipe.description }}</p>{% endif %}
+
+<h2>Ingredients</h2>
+
+{% set ingredient_groups,remaining_ingredients = recipe.group_ingredients() %}
+
+{% for ingredient_group in ingredient_groups %}
+<h3>{{ ingredient_group.title }}</h3>
+<ul>
+{% for ingredient in ingredient_group.ingredients %}
+<li>{{ ingredient.amount }} {{ ingredient.measure }} {{ ingredient.name }}</li>
+{% endfor %}
+</ul>
+{% endfor %}
+
+{% if remaining_ingredients %}
+<ul>
+{% for ingredient in remaining_ingredients %}
+<li>{{ ingredient.amount }} {{ ingredient.measure }} {{ ingredient.name }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+<h2>Instructions</h2>
+{{ recipe.html_instructions() }}
+
 {% endblock content %}
