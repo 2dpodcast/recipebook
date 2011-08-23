@@ -9,7 +9,7 @@ def before_request():
     """Check if user is logged in"""
     g.user = None
     if 'user_id' in session:
-        g.user = models.User.query.filter_by(id=session['user_id']).one()
+        g.user = models.User.query.get(session['user_id'])
 
 
 @recipes.route('/')

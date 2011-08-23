@@ -79,7 +79,7 @@ class Recipe(db.Model):
         return self.instructions
 
     def url(self):
-        user = User.query.filter_by(id=self.user_id).first()
+        user = User.query.get(self.user_id)
         return url_for('recipes.recipe', username=user.username, recipe_slug=self.titleslug)
 
 
