@@ -18,6 +18,10 @@ def devinit():
     for ingredient in ingredients:
         db.session.add(ingredient)
     recipe1 = models.Recipe('Test Recipe',1,ingredients,'A new test recipe')
+    recipe1.instructions = """- Boil spaghetti with salt for 10 mins.
+- Brown the mince.
+- Serve the mince on the spaghetti.
+    """
     db.session.add(recipe1)
     db.session.commit()
     ingredients = [

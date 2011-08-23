@@ -6,6 +6,7 @@ from unicodedata import normalize
 from sqlalchemy.ext.hybrid import Comparator, hybrid_property
 from flask import url_for
 from datetime import datetime
+import markdown2
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -76,7 +77,7 @@ class Recipe(db.Model):
         return ([], self.ingredients)
 
     def html_instructions(self):
-        return self.instructions
+        return markdown2.markdown(self.instructions)
 
 
 class Ingredient(db.Model):

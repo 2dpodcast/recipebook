@@ -31,6 +31,6 @@
 {% endif %}
 
 <h2>Instructions</h2>
-{{ recipe.html_instructions() }}
+{{ recipe.html_instructions()|safe }}
 
 {% endblock content %}
