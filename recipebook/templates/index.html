@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<h2>Latest Recipes</h2>
 {% for recipe in recipes %}<article>
   <h2><a href="{{ url_for('.recipe', username=recipe.user.username, recipe_slug=recipe.titleslug) }}">{{ recipe.title }}</a></h2>
   {% if recipe.description %}<p>{{ recipe.description }}</p>{% endif %}
