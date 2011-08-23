@@ -14,7 +14,8 @@ def before_request():
 
 @recipes.route('/')
 def index():
-    return render_template('index.html')
+    latest_recipes = models.Recipe.query.order_by(db.desc(models.Recipe.date)).limit(config.NUMBER_HOME_RECIPES)
+    return render_template('index.html', recipes=latest_recipes)
 
 
 @recipes.route('/login', methods=('GET','POST'))

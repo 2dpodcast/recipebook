@@ -4,6 +4,8 @@ from sqlalchemy.orm.exc import NoResultFound
 import re
 from unicodedata import normalize
 from sqlalchemy.ext.hybrid import Comparator, hybrid_property
+from flask import url_for
+from datetime import datetime
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -54,6 +56,7 @@ class Recipe(db.Model):
     tags = db.relationship('Tag',
             secondary=recipe_tags, backref=db.backref('tag_recipes'))
     ingredients = db.relationship('Ingredient', backref='recipes')
+    date = db.Column(db.DateTime)
 
     def __init__(self, title, user_id, ingredients=None, description='', instructions='', photo=''):
         self.title = title
@@ -67,12 +70,17 @@ class Recipe(db.Model):
         self.description = description
         self.instructions = instructions
         self.photo = photo
+        self.date = datetime.now()
 
     def group_ingredients(self):
         return ([], self.ingredients)
 
     def html_instructions(self):
         return self.instructions
+
+    def url(self):
+        user = User.query.filter_by(id=self.user_id).first()
+        return url_for('recipes.recipe', username=user.username, recipe_slug=self.titleslug)
 
 
 class Ingredient(db.Model):

@@ -15,7 +15,7 @@
   <div id="container">
 
   <header>
-  <h1>Recipe Book</h1>
+  <h1><a href="{{ url_for('recipes.index') }}">Recipe Book</a></h1>
   <p>{% if g.user %}
     <a href="{{ url_for('recipes.logout') }}">Logout {{ g.user.username }}</a>
   {% else %}

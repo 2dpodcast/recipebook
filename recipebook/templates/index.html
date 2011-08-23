@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Hello world!</h1>
+{% for recipe in recipes %}<article>
+  <h2><a href="{{ recipe.url() }}">{{ recipe.title }}</a></h2>
+  {% if recipe.description %}<p>{{ recipe.description }}</p>{% endif %}
+</article>{% endfor %}
 {% endblock content %}

@@ -10,6 +10,8 @@ CSRF_ENABLED = True
 #Prevent url clashes with usernames
 DISABLED_USERNAMES = ['login','register','static','account','new','search','p']
 
+NUMBER_HOME_RECIPES = 10
+
 #Override settings with local_config.py
 try:
     from local_config import *
