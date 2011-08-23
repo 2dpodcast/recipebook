@@ -8,6 +8,8 @@ class RecipebookTestCase(unittest.TestCase):
     def setUp(self):
         config.SQLALCHEMY_DATABASE_URI = config.TEST_DATABASE_URI
         config.SQLALCHEMY_ECHO = True
+        # Disable CSRF to be able to test posting to forms
+        config.CSRF_ENABLED = False
         app = create_app(config)
         app.config['TESTING'] = True
         app.test_request_context().push()
@@ -19,12 +21,22 @@ class RecipebookTestCase(unittest.TestCase):
         pass
 
     def add_users(self):
-        #Add some test uers
+        # Add some test uers
         admin_user = models.User('admin@nonexistent.com','admin','admin',models.User.ADMIN)
         test_user = models.User('tester@nonexistent.com','tester','tester',models.User.USER)
         db.session.add(admin_user)
         db.session.add(test_user)
         db.session.commit()
+
+    def test_invalid_user(self):
+        test_email = 'test_invalid@test.com'
+        rv = self.app.post('/register',data={
+            'email':test_email,
+            'username':config.DISABLED_USERNAMES[1],
+            'realname':'Tester',
+            'password':'12345'}, follow_redirects=True)
+        assert 'not allowed' in rv.data
+        assert models.User.query.filter_by(email=test_email).first() == None
 
     def test_add_users(self):
         self.add_users()

@@ -5,6 +5,7 @@ SQLALCHEMY_ECHO = True
 
 SECRET_KEY = '12345'
 DEBUG = True
+CSRF_ENABLED = True
 
 #Prevent url clashes with usernames
 DISABLED_USERNAMES = ['login','register','static','account','new','search','p']

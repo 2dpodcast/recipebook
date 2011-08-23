@@ -31,6 +31,9 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
+    def display_name(self):
+        return self.realname if self.realname else self.username
+
 
 recipe_tags = db.Table('recipe_tags',
         db.Column('tag_id', db.Integer, db.ForeignKey('tags.id')),

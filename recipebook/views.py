@@ -1,4 +1,4 @@
-from recipebook import models, forms, db
+from recipebook import models, forms, db, config
 from flask import render_template, request, abort, Blueprint, g, session, redirect, url_for, flash
 
 recipes = Blueprint('recipes',__name__)
@@ -19,7 +19,7 @@ def index():
 
 @recipes.route('/login', methods=('GET','POST'))
 def login():
-    form = forms.Login(request.form)
+    form = forms.Login(request.form, csrf_enabled=config.CSRF_ENABLED)
     if request.method == 'POST' and form.validate():
         flash(u'Successfully logged in as %s' % form.user.username)
         session['user_id'] = form.user.id
@@ -29,7 +29,7 @@ def login():
 
 @recipes.route('/register', methods=('GET','POST'))
 def register():
-    form = forms.Register(request.form)
+    form = forms.Register(request.form, csrf_enabled=config.CSRF_ENABLED)
     if request.method == 'POST' and form.validate():
         user = models.User(form.email.data, form.username.data, form.password.data, models.User.USER)
         user.realname = form.realname.data
