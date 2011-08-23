@@ -8,8 +8,12 @@ errors = Blueprint('errors',__name__)
 def before_request():
     """Check if user is logged in"""
     g.user = None
+    g.owner = False
+    g.admin = False
     if 'user_id' in session:
         g.user = models.User.query.get(session['user_id'])
+        if g.user.level == models.User.ADMIN:
+            g.admin = True
 
 
 @recipes.route('/')
@@ -49,12 +53,27 @@ def logout():
 @recipes.route('/<username>')
 def user_recipes(username):
     user = models.User.query.filter_by(username=username).first_or_404()
+    if g.user is not None and g.user.id == user.id:
+        g.owner = True
     return render_template('user_recipes.html', user=user, recipes=user.recipes.all())
 
 
 @recipes.route('/<username>/<recipe_slug>')
 def recipe(username,recipe_slug):
     user = models.User.query.filter_by(username=username).first_or_404()
+    if g.user is not None and g.user.id == user.id:
+        g.owner = True
+    user_recipe = models.Recipe.query.filter(db.and_(models.Recipe.user_id==user.id,models.Recipe.titleslug==recipe_slug)).first_or_404()
+    return render_template('recipe.html', user=user, recipe=user_recipe)
+
+
+@recipes.route('/<username>/<recipe_slug>/edit')
+def edit_recipe(username,recipe_slug):
+    user = models.User.query.filter_by(username=username).first_or_404()
+    if g.user is not None and g.user.id == user.id:
+        g.owner = True
+    else:
+        abort(401)
     user_recipe = models.Recipe.query.filter(db.and_(models.Recipe.user_id==user.id,models.Recipe.titleslug==recipe_slug)).first_or_404()
     return render_template('recipe.html', user=user, recipe=user_recipe)
 
