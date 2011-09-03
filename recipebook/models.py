@@ -51,7 +51,7 @@ class Recipe(db.Model):
     title = db.Column(db.String)
     titleslug = db.Column(db.String)
     description = db.Column(db.Text)
-    photo = db.Column(db.String)
+    photo = db.Column(db.String(50))
     instructions = db.Column(db.Text)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     tags = db.relationship('Tag',
@@ -62,7 +62,7 @@ class Recipe(db.Model):
     def __init__(self, title, user_id, ingredients=None, description='', instructions='', photo=''):
         self.title = title
         self.titleslug = _slugify(title)
-        #todo: check that titleslug is unique
+        #todo: check that titleslug is unique within user
         self.user_id = user_id
         if ingredients is None:
             self.ingredients = []

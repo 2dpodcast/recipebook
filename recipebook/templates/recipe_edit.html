@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import field_with_errors %}
+
+{% block content %}
+<form action="{{ url_for('recipes.edit_recipe', username=recipe.user.username, recipe_slug=recipe.titleslug) }}" method="POST" enctype="multipart/form-data">
+  {{ form.csrf }}
+  {{ field_with_errors(form.title, size=25, autofocus="autofocus") }}
+  {{ field_with_errors(form.photo) }}
+  <p><input type="submit" value="Save"></p>
+</form>
+{% endblock content %}

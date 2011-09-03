@@ -12,6 +12,7 @@ def create_app(config):
     app.config['TEST_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
     app.config['SQLALCHEMY_ECHO'] = config.SQLALCHEMY_ECHO
     app.config['SECRET_KEY'] = config.SECRET_KEY
+    app.config['MAX_CONTENT_LENGTH'] = config.MAX_CONTENT_LENGTH
 
     db.init_app(app)
 

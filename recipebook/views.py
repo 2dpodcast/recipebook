@@ -67,15 +67,24 @@ def recipe(username,recipe_slug):
     return render_template('recipe.html', user=user, recipe=user_recipe)
 
 
-@recipes.route('/<username>/<recipe_slug>/edit')
+@recipes.route('/<username>/<recipe_slug>/edit', methods=('GET','POST'))
 def edit_recipe(username,recipe_slug):
     user = models.User.query.filter_by(username=username).first_or_404()
     if g.user is not None and g.user.id == user.id:
         g.owner = True
+    elif g.admin:
+        pass
     else:
         abort(401)
-    user_recipe = models.Recipe.query.filter(db.and_(models.Recipe.user_id==user.id,models.Recipe.titleslug==recipe_slug)).first_or_404()
-    return render_template('recipe.html', user=user, recipe=user_recipe)
+    user_recipe = models.Recipe.query.filter(db.and_(
+            models.Recipe.user_id==user.id,
+            models.Recipe.titleslug==recipe_slug)).first_or_404()
+    form = forms.RecipeEdit(request.form, csrf_enabled=config.CSRF_ENABLED)
+    if request.method == 'POST' and form.validate():
+        user_recipe.photo = form.save_photo()
+        db.session.commit()
+        return redirect(url_for('recipes.recipe', username=username, recipe_slug=recipe_slug))
+    return render_template('recipe_edit.html', user=user, recipe=user_recipe, form=form)
 
 
 def not_found(error):

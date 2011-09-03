@@ -7,6 +7,10 @@
 <p><a href="{{ url_for('.edit_recipe', username=recipe.user.username, recipe_slug=recipe.titleslug) }}">Edit this recipe.</a></p>
 {% endif %}
 
+{% if recipe.photo %}
+<p><img src="/static/photos/{{ recipe.photo }}.jpg" /></p>
+{% endif %}
+
 {% if recipe.description %}<p> {{recipe.description }}</p>{% endif %}
 
 <h2>Ingredients</h2>
