@@ -15,6 +15,7 @@ NUMBER_HOME_RECIPES = 10
 #Max content size in bytes
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 PHOTO_DIRECTORY = 'recipebook/static/photos'
+PHOTO_PATH = '/static/photos'
 
 #Override settings with local_config.py
 try:

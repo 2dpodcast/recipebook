@@ -1,4 +1,4 @@
-from recipebook import db
+from recipebook import db, config
 from werkzeug import generate_password_hash, check_password_hash
 from sqlalchemy.orm.exc import NoResultFound
 import re
@@ -7,6 +7,8 @@ from sqlalchemy.ext.hybrid import Comparator, hybrid_property
 from flask import url_for
 from datetime import datetime
 import markdown2
+import Image
+import os
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -78,6 +80,34 @@ class Recipe(db.Model):
 
     def html_instructions(self):
         return markdown2.markdown(self.instructions)
+
+    def show_photo(self,width,height):
+        """ Return the path to a photo with the specified dimensions.
+        If it doesn't exist, it is created
+        """
+        #PHOTO_PATH is used in rendered web page whereas PHOTO_DIRECTORY is the full directory on the server
+        resized_name = self.photo+'_%dx%d.jpg' % (width,height)
+        resized_path = config.PHOTO_DIRECTORY+os.sep+resized_name
+        if not os.path.isfile(resized_path):
+            photo = Image.open(config.PHOTO_DIRECTORY+os.sep+self.photo+'.jpg')
+
+            current_ratio = float(photo.size[0]) / float(photo.size[1])
+            desired_ratio = float(width) / float(height)
+            box = [0, 0, photo.size[0], photo.size[1]]
+
+            if current_ratio > desired_ratio:
+                width_crop = int(round((photo.size[0] - desired_ratio * photo.size[1])/2.))
+                box[0] = width_crop
+                box[2] -= width_crop
+            else:
+                height_crop = int(round((photo.size[1] - photo.size[0] / desired_ratio)/2.))
+                box[1] = height_crop
+                box[3] -= height_crop
+
+            resized_photo = photo.crop(box).resize((width,height),Image.BILINEAR)
+
+            resized_photo.save(resized_path)
+        return config.PHOTO_PATH+os.sep+resized_name
 
 
 class Ingredient(db.Model):

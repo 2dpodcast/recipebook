@@ -14,6 +14,7 @@ def valid_username(form, field):
 def valid_photo(form, field):
     try:
         field.image = Image.open(field.file)
+        field.image.verify() # can't be used after calling verify
     except:
         raise ValidationError("Photo is not a recognised image type")
 
@@ -87,10 +88,8 @@ class RecipeEdit(Form):
         return True
 
     def save_photo(self):
-        try:
-            image = self.photo.image
-        except AttributeError:
-            image = Image.open(self.photo.file)
+        self.photo.file.seek(0)
+        image = Image.open(self.photo.file)
         file_hash = sha1(image.tostring()).hexdigest()
         image.save(os.path.join(config.PHOTO_DIRECTORY, file_hash+'.jpg'))
         return file_hash

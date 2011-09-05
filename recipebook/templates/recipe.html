@@ -8,7 +8,7 @@
 {% endif %}
 
 {% if recipe.photo %}
-<p><img src="/static/photos/{{ recipe.photo }}.jpg" /></p>
+<p><img src="{{ recipe.show_photo(250,180) }}" width="250" height="180" /></p>
 {% endif %}
 
 {% if recipe.description %}<p> {{recipe.description }}</p>{% endif %}
