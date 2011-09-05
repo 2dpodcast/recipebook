@@ -12,6 +12,8 @@ def valid_username(form, field):
 
 
 def valid_photo(form, field):
+    if field.file.filename == '':
+        return
     try:
         field.image = Image.open(field.file)
         field.image.verify() # can't be used after calling verify
