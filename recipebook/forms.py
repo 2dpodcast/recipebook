@@ -1,4 +1,4 @@
-from flaskext.wtf import Form, TextField, FileField, PasswordField, validators, ValidationError
+from flaskext import wtf
 from recipebook.models import User
 from recipebook import db, config
 import re
@@ -8,7 +8,7 @@ import os
 
 def valid_username(form, field):
     if not re.match(r'[a-zA-Z0-9_\-]+', field.data):
-        raise ValidationError("User name may contain only alphanumeric characters, hyphens and underscores")
+        raise wtf.ValidationError("User name may contain only alphanumeric characters, hyphens and underscores")
 
 
 def valid_photo(form, field):
@@ -16,20 +16,20 @@ def valid_photo(form, field):
         field.image = Image.open(field.file)
         field.image.verify() # can't be used after calling verify
     except:
-        raise ValidationError("Photo is not a recognised image type")
+        raise wtf.ValidationError("Photo is not a recognised image type")
 
 
-class Login(Form):
-    login = TextField('Username or Email', validators = [validators.Required(message="No user name or email entered")])
-    password = PasswordField('Password', validators = [validators.Required(message="No password entered")])
+class Login(wtf.Form):
+    login = wtf.TextField('Username or Email', validators = [wtf.validators.Required(message="No user name or email entered")])
+    password = wtf.PasswordField('Password', validators = [wtf.validators.Required(message="No password entered")])
 
     def __init__(self, *args, **kwargs):
-        Form.__init__(self, *args, **kwargs)
+        wtf.Form.__init__(self, *args, **kwargs)
         self.user = None
 
     def validate(self):
         # regular validation
-        rv = Form.validate(self)
+        rv = wtf.Form.validate(self)
         if not rv:
             return False
 
@@ -46,14 +46,14 @@ class Login(Form):
         return True
 
 
-class Register(Form):
-    email = TextField('Email',validators = [validators.Email(message="Invalid email address provided")])
-    username = TextField('User name', validators = [validators.Required(message="No user name provided"), valid_username])
-    realname = TextField('Real name (optional)')
-    password = PasswordField('Password', validators = [validators.Required(message="No password provided")])
+class Register(wtf.Form):
+    email = wtf.TextField('Email',validators = [wtf.validators.Email(message="Invalid email address provided")])
+    username = wtf.TextField('User name', validators = [wtf.validators.Required(message="No user name provided"), valid_username])
+    realname = wtf.TextField('Real name (optional)')
+    password = wtf.PasswordField('Password', validators = [wtf.validators.Required(message="No password provided")])
 
     def validate(self):
-        rv = Form.validate(self)
+        rv = wtf.Form.validate(self)
         if not rv:
             return False
 
@@ -74,15 +74,23 @@ class Register(Form):
         return True
 
 
-class RecipeEdit(Form):
-    #http://packages.python.org/Flask-WTF/field.file.filename
-    #http://flask.pocoo.org/docs/patterns/fileuploads/
-    #http://stackoverflow.com/questions/266648/python-check-if-uploaded-file-is-jpg
-    title = TextField('Title',validators = [validators.Required(message="You must set a title for the recipe")])
-    photo = FileField('Photo',validators = [valid_photo])
+class IngredientForm(wtf.Form):
+    amount = wtf.DecimalField("Amount", validators = [wtf.validators.Required(message="Ingredient amounts must be specified")])
+    measure = wtf.TextField("Measure")
+    ingredient = wtf.TextField("Ingredient", validators = [wtf.validators.Required(message="Ingredient names must be specified")])
+    group = wtf.HiddenField("Group")
+
+
+class RecipeEdit(wtf.Form):
+    description = wtf.TextAreaField('Description')
+    photo = wtf.FileField('Photo',validators = [valid_photo])
+    ingredients = wtf.FieldList(wtf.FormField(IngredientForm),min_entries=3,max_entries=200)
+    group_names = wtf.FieldList(
+        wtf.TextField("Group title", validators = [wtf.validators.Required(message="Ingredient groups must have a title")]),
+        min_entries=0,max_entries=200)
 
     def validate(self):
-        rv = Form.validate(self)
+        rv = wtf.Form.validate(self)
         if not rv:
             return False
         return True

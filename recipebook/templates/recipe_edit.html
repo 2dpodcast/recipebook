@@ -1,11 +1,59 @@
 {% extends 'base.html' %}
 {% from '_macros.html' import field_with_errors %}
 
+{# Script for adding new ingredients and ingredient groups #}
+{% block scripts %}
+{{ super() }}
+<script language="Javascript" type="text/javascript">
+var counter = {{ form.ingredients.entries | length - 1 }};
+var group_counter = -1;
+
+function addIngredient(tableName){
+    counter++;
+    var newIngredient = document.createElement('tr');
+    newIngredient.innerHTML = '<td><input id="ingredients-'+counter+'-amount" name="ingredients-'+counter+'-amount" type="text" value="" /></td>' +
+        '<td><input id="ingredients-'+counter+'-measure" name="ingredients-'+counter+'-measure" type="text" value="" /></td>' +
+        '<td><input id="ingredients-'+counter+'-ingredient" name="ingredients-'+counter+'-ingredient" type="text" value="" /></td>' +
+        '<input id="ingredients-'+counter+'-group" name="ingredients-'+counter+'-group" type="hidden" value="" />';
+    document.getElementById(tableName).appendChild(newIngredient);
+}
+
+function addIngredientGroup(divName){
+    group_counter++;
+    counter++;
+    var group_id = "group_names-"+group_counter;
+    var newGroup = document.createElement('fieldset');
+    newGroup.innerHTML = '<input id="group_names-'+group_counter+'" name="group_names-'+group_counter+'" type="text" value="" />' +
+        '<table id="ingredient_group_'+group_counter+'">' +
+        '<tr><td><input id="ingredients-'+counter+'-amount" name="ingredients-'+counter+'-amount" type="text" value="" /></td>' +
+        '<td><input id="ingredients-'+counter+'-measure" name="ingredients-'+counter+'-measure" type="text" value="" /></td>' +
+        '<td><input id="ingredients-'+counter+'-ingredient" name="ingredients-'+counter+'-ingredient" type="text" value="" /></td>' +
+        '<input id="ingredients-'+counter+'-group" name="ingredients-'+counter+'-group" type="hidden" value="'+group_counter+'" /></tr></table>' +
+        '<a href="#" onClick="addIngredient(\'ingredient_group_'+group_counter+'\');">Add another ingredient</a>';
+    document.getElementById(divName).appendChild(newGroup);
+}
+</script>
+{% endblock scripts %}
+
 {% block content %}
+<h1>{{ recipe.title }}</h1>
 <form action="{{ url_for('recipes.edit_recipe', username=recipe.user.username, recipe_slug=recipe.titleslug) }}" method="POST" enctype="multipart/form-data">
   {{ form.csrf }}
-  {{ field_with_errors(form.title, size=25, autofocus="autofocus") }}
+  {{ field_with_errors(form.description, style="width:300px", rows=6, autofocus="autofocus") }}
   {{ field_with_errors(form.photo) }}
+  <h2>Ingredients</h2>
+  <div id="ingredients">
+  <table id="general_ingredients"><tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>
+    {% for ingredient in form.ingredients.entries %}<tr>
+      <td>{{ ingredient.amount() }}</td>
+      <td>{{ ingredient.measure() }}</td>
+      <td>{{ ingredient.ingredient() }}</td>
+      {{ ingredient.group() }}
+    </tr>{% endfor %}
+  </table>
+  <a href="#" onClick="addIngredient('general_ingredients');">Add another ingredient</a>
+  </div>
+  <a href="#" onClick="addIngredientGroup('ingredients');">Add an ingredient group</a>
   <p><input type="submit" value="Save"></p>
 </form>
 {% endblock content %}
