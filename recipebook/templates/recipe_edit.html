@@ -4,33 +4,39 @@
 {# Script for adding new ingredients and ingredient groups #}
 {% block scripts %}
 {{ super() }}
-<script language="Javascript" type="text/javascript">
-var counter = {{ form.ingredients.entries | length - 1 }};
-var group_counter = -1;
 
+<script language="Javascript" type="text/javascript">
 function addIngredient(tableName){
-    counter++;
+    var table = document.getElementById(tableName);
+    var count = table.getElementsByTagName("tr").length + 1;
     var newIngredient = document.createElement('tr');
-    newIngredient.innerHTML = '<td><input id="ingredients-'+counter+'-amount" name="ingredients-'+counter+'-amount" type="text" value="" /></td>' +
-        '<td><input id="ingredients-'+counter+'-measure" name="ingredients-'+counter+'-measure" type="text" value="" /></td>' +
-        '<td><input id="ingredients-'+counter+'-ingredient" name="ingredients-'+counter+'-ingredient" type="text" value="" /></td>' +
-        '<input id="ingredients-'+counter+'-group" name="ingredients-'+counter+'-group" type="hidden" value="" />';
-    document.getElementById(tableName).appendChild(newIngredient);
+    newIngredient.innerHTML = '<td><input id="ingredients-'+count+'-amount" name="ingredients-'+count+'-amount" type="text" value="" /></td>' +
+        '<td><input id="ingredients-'+count+'-measure" name="ingredients-'+count+'-measure" type="text" value="" /></td>' +
+        '<td><input id="ingredients-'+count+'-ingredient" name="ingredients-'+count+'-ingredient" type="text" value="" /></td>' +
+        '<input id="ingredients-'+count+'-group" name="ingredients-'+count+'-group" type="hidden" value="" />';
+    table.appendChild(newIngredient);
 }
 
 function addIngredientGroup(divName){
-    group_counter++;
-    counter++;
-    var group_id = "group_names-"+group_counter;
+    var groups_div = document.getElementById(divName);
+    group_count = groups_div.getElementsByTagName("fieldset").length;
+    var minimum_ingredients = {{ form.MIN_INGREDIENTS }};
+    var group_id = "ingredient_groups-"+group_count;
     var newGroup = document.createElement('fieldset');
-    newGroup.innerHTML = '<input id="group_names-'+group_counter+'" name="group_names-'+group_counter+'" type="text" value="" />' +
-        '<table id="ingredient_group_'+group_counter+'">' +
-        '<tr><td><input id="ingredients-'+counter+'-amount" name="ingredients-'+counter+'-amount" type="text" value="" /></td>' +
-        '<td><input id="ingredients-'+counter+'-measure" name="ingredients-'+counter+'-measure" type="text" value="" /></td>' +
-        '<td><input id="ingredients-'+counter+'-ingredient" name="ingredients-'+counter+'-ingredient" type="text" value="" /></td>' +
-        '<input id="ingredients-'+counter+'-group" name="ingredients-'+counter+'-group" type="hidden" value="'+group_counter+'" /></tr></table>' +
-        '<a href="#" onClick="addIngredient(\'ingredient_group_'+group_counter+'\');">Add another ingredient</a>';
-    document.getElementById(divName).appendChild(newGroup);
+
+    innerHTML = '<label for="ingredient_groups-'+group_count+'-title">Group title</label><input id="ingredient_groups-'+group_count+'-title" name="ingredient_groups-'+group_count+'-title" type="text" value="" />' +
+        '<table id="ingredient_group-'+group_count+'"><tbody><tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>';
+    for (count=0; count<minimum_ingredients; count++) {
+        innerHTML += '<tr>' +
+            '<td><input id="ingredient_groups-'+group_count+'-ingredients-'+count+'-amount"     name="ingredient_groups-'+group_count+'-ingredients-'+count+'-amount" type="text" value="" /></td>' +
+            '<td><input id="ingredient_groups-'+group_count+'-ingredients-'+count+'-measure"    name="ingredient_groups-'+group_count+'-ingredients-'+count+'-measure" type="text" value="" /></td>' +
+            '<td><input id="ingredient_groups-'+group_count+'-ingredients-'+count+'-ingredient" name="ingredient_groups-'+group_count+'-ingredients-'+count+'-ingredient" type="text" value="" /></td>' +
+            '</tr>';
+    }
+    innerHTML += '</tbody></table>' +
+        '<a href="#add_ingredient_group" onClick="addIngredient(\'ingredient_group-'+group_count+'\');">Add another ingredient</a>';
+    newGroup.innerHTML = innerHTML; {# Delay assignment so that table doesn't get messed up #}
+    groups_div.appendChild(newGroup);
 }
 </script>
 {% endblock scripts %}
@@ -41,19 +47,39 @@ function addIngredientGroup(divName){
   {{ form.csrf }}
   {{ field_with_errors(form.description, style="width:300px", rows=6, autofocus="autofocus") }}
   {{ field_with_errors(form.photo) }}
+
   <h2>Ingredients</h2>
   <div id="ingredients">
+
   <table id="general_ingredients"><tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>
-    {% for ingredient in form.ingredients.entries %}<tr>
-      <td>{{ ingredient.amount() }}</td>
-      <td>{{ ingredient.measure() }}</td>
-      <td>{{ ingredient.ingredient() }}</td>
-      {{ ingredient.group() }}
+    {% for ingredient in form.general_ingredients.ingredients.entries %}<tr>
+    <td>{{ ingredient.amount() }}</td>
+    <td>{{ ingredient.measure() }}</td>
+    <td>{{ ingredient.ingredient() }}</td>
     </tr>{% endfor %}
   </table>
-  <a href="#" onClick="addIngredient('general_ingredients');">Add another ingredient</a>
+  <a href="#add_ingredient" onClick="addIngredient('general_ingredients');">Add another ingredient</a>
+
+  {% for ingredient_group in form.ingredient_groups.entries %}
+  <fieldset>
+  {{ ingredient_group.title.label }}
+  {{ ingredient_group.title() }}
+  <table id="ingredient_group-{{ loop.index - 1 }}">
+  <tbody>
+    <tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>
+    {% for ingredient in ingredient_group.ingredients.entries %}<tr>
+    <td>{{ ingredient.amount() }}</td>
+    <td>{{ ingredient.measure() }}</td>
+    <td>{{ ingredient.ingredient() }}</td>
+    </tr>{% endfor %}
+  </tbody>
+  </table>
+  <a href="#add_ingredient" onClick="addIngredient('ingredient_group-{{ loop.index - 1 }}');">Add another ingredient</a>
+  </fieldset>
+  {% endfor %}
+
   </div>
-  <a href="#" onClick="addIngredientGroup('ingredients');">Add an ingredient group</a>
+  <a href="#add_ingredient_group" onClick="addIngredientGroup('ingredients');">Add an ingredient group</a>
   <p><input type="submit" value="Save"></p>
 </form>
 {% endblock content %}
