@@ -84,15 +84,16 @@ class IngredientForm(wtf.Form):
 
 class IngredientGroup(wtf.Form):
     title = wtf.TextField("Group title")
-    ingredients = wtf.FieldList(wtf.FormField(IngredientForm),min_entries=4,max_entries=200)
+    ingredients = wtf.FieldList(wtf.FormField(IngredientForm),min_entries=3,max_entries=200)
 
 
 class RecipeEdit(wtf.Form):
     MIN_INGREDIENTS = 3;
+    MIN_GROUPS = 2;
     description = wtf.TextAreaField('Description')
     photo = wtf.FileField('Photo',validators = [valid_photo])
     general_ingredients = wtf.FormField(IngredientGroup)
-    ingredient_groups = wtf.FieldList(wtf.FormField(IngredientGroup),min_entries=3,max_entries=20)
+    ingredient_groups = wtf.FieldList(wtf.FormField(IngredientGroup),min_entries=MIN_GROUPS,max_entries=20)
 
     def validate(self):
         rv = wtf.Form.validate(self)

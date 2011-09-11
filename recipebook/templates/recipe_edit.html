@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 {% from '_macros.html' import field_with_errors %}
 
-{# Script for adding new ingredients and ingredient groups #}
+{# Script for adding and removing new ingredients and ingredient groups #}
 {% block scripts %}
 {{ super() }}
 
 <script language="Javascript" type="text/javascript">
-function addIngredient(tableName){
-    var table = document.getElementById(tableName);
-    var count = table.getElementsByTagName("tr").length + 1;
+function addIngredient(groupName){
+    var table = document.getElementById(groupName).getElementsByTagName('tbody')[0];
+    var count = table.getElementsByTagName("tr").length;
     var newIngredient = document.createElement('tr');
-    newIngredient.innerHTML = '<td><input id="ingredients-'+count+'-amount" name="ingredients-'+count+'-amount" type="text" value="" /></td>' +
-        '<td><input id="ingredients-'+count+'-measure" name="ingredients-'+count+'-measure" type="text" value="" /></td>' +
-        '<td><input id="ingredients-'+count+'-ingredient" name="ingredients-'+count+'-ingredient" type="text" value="" /></td>' +
-        '<input id="ingredients-'+count+'-group" name="ingredients-'+count+'-group" type="hidden" value="" />';
+    newIngredient.innerHTML = '<td><input id="'+groupName+'-ingredients-'+count+'-amount" name="'+groupName+'-ingredients-'+count+'-amount" type="text" value="" /></td>' +
+        '<td><input id="'+groupName+'-ingredients-'+count+'-measure" name="'+groupName+'-ingredients-'+count+'-measure" type="text" value="" /></td>' +
+        '<td><input id="'+groupName+'-ingredients-'+count+'-ingredient" name="'+groupName+'-ingredients-'+count+'-ingredient" type="text" value="" /></td>' +
+        '<td><a href="#remove_ingredient" onClick="removeIngredient(\''+groupName+'\','+count+');">Remove this ingredient</a></td>';
     table.appendChild(newIngredient);
 }
 
@@ -21,11 +21,11 @@ function addIngredientGroup(divName){
     var groups_div = document.getElementById(divName);
     group_count = groups_div.getElementsByTagName("fieldset").length;
     var minimum_ingredients = {{ form.MIN_INGREDIENTS }};
-    var group_id = "ingredient_groups-"+group_count;
     var newGroup = document.createElement('fieldset');
+    newGroup.id = 'ingredient_groups-'+group_count;
 
     innerHTML = '<label for="ingredient_groups-'+group_count+'-title">Group title</label><input id="ingredient_groups-'+group_count+'-title" name="ingredient_groups-'+group_count+'-title" type="text" value="" />' +
-        '<table id="ingredient_group-'+group_count+'"><tbody><tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>';
+        '<table><tbody><tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>';
     for (count=0; count<minimum_ingredients; count++) {
         innerHTML += '<tr>' +
             '<td><input id="ingredient_groups-'+group_count+'-ingredients-'+count+'-amount"     name="ingredient_groups-'+group_count+'-ingredients-'+count+'-amount" type="text" value="" /></td>' +
@@ -34,9 +34,22 @@ function addIngredientGroup(divName){
             '</tr>';
     }
     innerHTML += '</tbody></table>' +
-        '<a href="#add_ingredient_group" onClick="addIngredient(\'ingredient_group-'+group_count+'\');">Add another ingredient</a>';
+        '<a href="#add_ingredient" onClick="addIngredient(\'ingredient_groups-'+group_count+'\');">Add another ingredient</a><br />' +
+        '<a href="#remove_group" onClick="removeGroup(\'ingredient_groups-'+group_count+'\');">Remove this group</a>';
     newGroup.innerHTML = innerHTML; {# Delay assignment so that table doesn't get messed up #}
     groups_div.appendChild(newGroup);
+}
+
+function removeGroup(groupName) {
+    var groups_div = document.getElementById('ingredients');
+    var fieldset = document.getElementById(groupName);
+    groups_div.removeChild(fieldset);
+}
+
+function removeIngredient(groupName,row) {
+    var table = document.getElementById(groupName).getElementsByTagName('tbody')[0];
+    var row = table.getElementsByTagName('tr')[row];
+    table.removeChild(row);
 }
 </script>
 {% endblock scripts %}
@@ -56,25 +69,36 @@ function addIngredientGroup(divName){
     <td>{{ ingredient.amount() }}</td>
     <td>{{ ingredient.measure() }}</td>
     <td>{{ ingredient.ingredient() }}</td>
+    <td>{% if loop.index > form.MIN_INGREDIENTS %}
+      <a href="#remove_ingredient" onClick="removeIngredient('general_ingredients',{{ loop.index }});">Remove this ingredient</a>
+    {% endif %}</td>
     </tr>{% endfor %}
   </table>
   <a href="#add_ingredient" onClick="addIngredient('general_ingredients');">Add another ingredient</a>
 
   {% for ingredient_group in form.ingredient_groups.entries %}
-  <fieldset>
+  {% set group_id = "ingredient_groups-%d" % (loop.index-1) %}
+  <fieldset id="{{ group_id }}">
   {{ ingredient_group.title.label }}
   {{ ingredient_group.title() }}
-  <table id="ingredient_group-{{ loop.index - 1 }}">
+  <table>
   <tbody>
     <tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>
-    {% for ingredient in ingredient_group.ingredients.entries %}<tr>
+    {% for ingredient in ingredient_group.ingredients.entries %}
+    <tr>
     <td>{{ ingredient.amount() }}</td>
     <td>{{ ingredient.measure() }}</td>
     <td>{{ ingredient.ingredient() }}</td>
+    <td>{% if loop.index > form.MIN_INGREDIENTS %}
+      <a href="#remove_ingredient" onClick="removeIngredient('{{ group_id }}',{{ loop.index }});">Remove this ingredient</a>
+    {% endif %}</td>
     </tr>{% endfor %}
   </tbody>
   </table>
-  <a href="#add_ingredient" onClick="addIngredient('ingredient_group-{{ loop.index - 1 }}');">Add another ingredient</a>
+  <a href="#add_ingredient" onClick="addIngredient('{{ group_id }}');">Add another ingredient</a>
+  {% if loop.index > form.MIN_GROUPS %}
+    <br /><a href="#remove_group" onClick="removeGroup('{{ group_id }}');">Remove this group</a>
+  {% endif %}
   </fieldset>
   {% endfor %}
 
