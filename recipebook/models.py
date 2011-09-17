@@ -76,7 +76,10 @@ class Recipe(db.Model):
         self.date = datetime.now()
 
     def group_ingredients(self):
-        return ([], self.ingredients)
+        """Return a list of groups of ingredients. Each group is
+        a tuple of title and ingredients.
+        """
+        return (["",self.ingredients])
 
     def html_instructions(self):
         return markdown2.markdown(self.instructions)
@@ -117,14 +120,14 @@ class Ingredient(db.Model):
     name = db.Column(db.String)
     amount = db.Column(db.Float)
     measure = db.Column(db.String(40))
-    group_id = db.Column(db.Integer, db.ForeignKey('ingredient_groups.id'))
+    group_name = db.Column(db.String(150))
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'))
 
-    def __init__(self, name, amount, measure='', group=None):
+    def __init__(self, name, amount, measure='', group_name=''):
         self.name = name
         self.amount = amount
         self.measure = measure
-        self.group = group
+        self.group_name = group_name
 
 
 class Tag(db.Model):
@@ -132,13 +135,6 @@ class Tag(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
-
-
-class IngredientGroup(db.Model):
-    __tablename__ = 'ingredient_groups'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50))
 
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
