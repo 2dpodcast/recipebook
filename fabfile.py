@@ -35,4 +35,4 @@ def devinit():
     db.session.commit()
 
 def test():
-    local('python recipebook/test.py')
+    local('./env/bin/python recipebook/test.py')
