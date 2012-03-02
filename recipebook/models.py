@@ -10,6 +10,7 @@ import markdown2
 import Image
 import os
 
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -111,6 +112,14 @@ class Recipe(db.Model):
 
             resized_photo.save(resized_path)
         return config.PHOTO_PATH+os.sep+resized_name
+
+
+    def update_ingredients(self,ingredient_list):
+        """Update the list of ingredients, adding new ones
+        to the database and deleting ones no longer used.
+        """
+
+        pass
 
 
 class Ingredient(db.Model):
