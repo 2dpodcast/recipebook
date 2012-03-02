@@ -1,21 +1,23 @@
-from recipebook import db, config
-from werkzeug import generate_password_hash, check_password_hash
-from sqlalchemy.orm.exc import NoResultFound
-import re
-from unicodedata import normalize
-from sqlalchemy.ext.hybrid import Comparator, hybrid_property
-from flask import url_for
-from datetime import datetime
-import markdown2
-import Image
 import os
+import re
+from datetime import datetime
+import Image
+import markdown2
+from unicodedata import normalize
+
+from flask import url_for
+from werkzeug import generate_password_hash, check_password_hash
+from sqlalchemy.ext.hybrid import Comparator, hybrid_property
+from sqlalchemy.orm.exc import NoResultFound
+
+from recipebook import db, config
 
 
 class User(db.Model):
     __tablename__ = 'users'
 
     #User levels
-    (ADMIN,USER) = range(2)
+    (ADMIN, USER) = range(2)
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String, unique=True)
@@ -62,7 +64,8 @@ class Recipe(db.Model):
     ingredients = db.relationship('Ingredient', backref='recipe')
     date = db.Column(db.DateTime)
 
-    def __init__(self, title, user_id, ingredients=None, description='', instructions='', photo=''):
+    def __init__(self, title, user_id, ingredients=None, description='',
+            instructions='', photo=''):
         self.title = title
         self.titleslug = _slugify(title)
         #todo: check that titleslug is unique within user
@@ -80,41 +83,45 @@ class Recipe(db.Model):
         """Return a list of groups of ingredients. Each group is
         a tuple of title and ingredients.
         """
-        return (["",self.ingredients])
+        return (["", self.ingredients])
 
     def html_instructions(self):
         return markdown2.markdown(self.instructions)
 
-    def show_photo(self,width,height):
+    def show_photo(self, width, height):
         """ Return the path to a photo with the specified dimensions.
         If it doesn't exist, it is created
         """
-        #PHOTO_PATH is used in rendered web page whereas PHOTO_DIRECTORY is the full directory on the server
-        resized_name = self.photo+'_%dx%d.jpg' % (width,height)
-        resized_path = config.PHOTO_DIRECTORY+os.sep+resized_name
+        #PHOTO_PATH is used in rendered web page whereas PHOTO_DIRECTORY is
+        # the full directory on the server
+        resized_name = self.photo + '_%dx%d.jpg' % (width, height)
+        resized_path = config.PHOTO_DIRECTORY + os.sep + resized_name
         if not os.path.isfile(resized_path):
-            photo = Image.open(config.PHOTO_DIRECTORY+os.sep+self.photo+'.jpg')
+            photo = Image.open(
+                    config.PHOTO_DIRECTORY + os.sep + self.photo + '.jpg')
 
             current_ratio = float(photo.size[0]) / float(photo.size[1])
             desired_ratio = float(width) / float(height)
             box = [0, 0, photo.size[0], photo.size[1]]
 
             if current_ratio > desired_ratio:
-                width_crop = int(round((photo.size[0] - desired_ratio * photo.size[1])/2.))
+                width_crop = int(round(
+                    (photo.size[0] - desired_ratio * photo.size[1]) / 2.))
                 box[0] = width_crop
                 box[2] -= width_crop
             else:
-                height_crop = int(round((photo.size[1] - photo.size[0] / desired_ratio)/2.))
+                height_crop = int(round(
+                    (photo.size[1] - photo.size[0] / desired_ratio) / 2.))
                 box[1] = height_crop
                 box[3] -= height_crop
 
-            resized_photo = photo.crop(box).resize((width,height),Image.BILINEAR)
+            resized_photo = photo.crop(box).resize(
+                    (width, height), Image.BILINEAR)
 
             resized_photo.save(resized_path)
-        return config.PHOTO_PATH+os.sep+resized_name
+        return config.PHOTO_PATH + os.sep + resized_name
 
-
-    def update_ingredients(self,ingredient_list):
+    def update_ingredients(self, ingredient_list):
         """Update the list of ingredients, adding new ones
         to the database and deleting ones no longer used.
         """
@@ -147,6 +154,7 @@ class Tag(db.Model):
 
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
+
 
 def _slugify(text, delim=u'-'):
     """Generates an ASCII-only slug."""

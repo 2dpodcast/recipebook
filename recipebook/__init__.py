@@ -5,6 +5,7 @@ db = SQLAlchemy()
 
 import recipebook.models
 
+
 def create_app(config):
     app = Flask('recipebook')
 
@@ -23,7 +24,6 @@ def create_app(config):
     app.register_blueprint(views.errors)
 
     for eh in recipebook.views.error_handlers:
-        app.register_error_handler(eh[0],eh[1])
+        app.register_error_handler(eh[0], eh[1])
 
     return app
-

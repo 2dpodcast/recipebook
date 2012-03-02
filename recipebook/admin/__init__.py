@@ -2,7 +2,9 @@ from flask import Blueprint, session, abort
 
 from recipebook import models
 
+
 admin = Blueprint('admin', __name__)
+
 
 @admin.before_request
 def restrict_to_admin():
@@ -12,5 +14,6 @@ def restrict_to_admin():
     user = models.User.query.filter_by(id=session['user_id']).one()
     if user.level != models.User.ADMIN:
         abort(401)
+
 
 import recipebook.admin.views

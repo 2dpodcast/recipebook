@@ -8,7 +8,8 @@ DEBUG = True
 CSRF_ENABLED = True
 
 #Prevent url clashes with usernames
-DISABLED_USERNAMES = ['login','register','static','account','new','search','p']
+DISABLED_USERNAMES = [
+    'login', 'register', 'static', 'account', 'new', 'search', 'p']
 
 NUMBER_HOME_RECIPES = 10
 
