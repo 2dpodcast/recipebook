@@ -19,7 +19,7 @@ connection.register([models.User, models.Recipe])
 def before_request():
     """Check if user is logged in and set the database"""
 
-    g.db = connection[current_app.database]
+    g.db = connection[current_app.config['DATABASE']]
     g.user = None
     g.owner = False
     g.admin = False
