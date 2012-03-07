@@ -1,36 +1,46 @@
 import os
 import re
-from datetime import datetime
-import Image
-import markdown2
+import datetime
 from unicodedata import normalize
+import Image
 
-from flask import url_for
 from werkzeug import generate_password_hash, check_password_hash
-from sqlalchemy.ext.hybrid import Comparator, hybrid_property
-from sqlalchemy.orm.exc import NoResultFound
+from mongokit import Document
+import markdown2
 
-from recipebook import db, config
+from recipebook import config
 
 
-class User(db.Model):
-    __tablename__ = 'users'
+class User(Document):
+    __collection__ = 'users'
+
+    structure = {
+        '_id': unicode,
+        'email': unicode,
+        'realname': unicode,
+        'password': unicode,
+        'level': int,
+        'registration_data': datetime.datetime,
+    }
+    indexes = [
+        {
+            'fields': '_id',
+            'unique': True,
+        },
+    ]
+    default_values = {
+        'level': 0,
+        'registration_date': datetime.datetime.utcnow,
+    }
+    use_dot_notation = True
 
     #User levels
     (ADMIN, USER) = range(2)
 
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String, unique=True)
-    username = db.Column(db.String, unique=True)
-    realname = db.Column(db.String)
-    password = db.Column(db.String)
-    level = db.Column(db.Integer)
-    recipes = db.relationship('Recipe', backref='user', lazy='dynamic')
-
     def __init__(self, email, username, password, level):
-        self.email = email
-        self.username = username
-        self.password = generate_password_hash(password)
+        self['email'] = email
+        self['_id'] = username
+        self['password'] = generate_password_hash(password)
         if level in range(2):
             self.level = level
         else:
@@ -42,34 +52,43 @@ class User(db.Model):
     def display_name(self):
         return self.realname if self.realname else self.username
 
-
-recipe_tags = db.Table('recipe_tags',
-        db.Column('tag_id', db.Integer, db.ForeignKey('tags.id')),
-        db.Column('recipe_id', db.Integer, db.ForeignKey('recipes.id')),
-)
+    @property
+    def username(self):
+        return self['_id']
 
 
-class Recipe(db.Model):
-    __tablename__ = 'recipes'
+class Recipe(Document):
+    __collection__ = 'recipes'
 
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String)
-    titleslug = db.Column(db.String)
-    description = db.Column(db.Text)
-    photo = db.Column(db.String(50))
-    instructions = db.Column(db.Text)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    tags = db.relationship('Tag',
-            secondary=recipe_tags, backref=db.backref('tag_recipes'))
-    ingredients = db.relationship('Ingredient', backref='recipe')
-    date = db.Column(db.DateTime)
+    structure = {
+        'title': unicode,
+        'titleslug': unicode,
+        'description': unicode,
+        'photo': unicode,
+        'instructions': unicode,
+        'user': unicode,
+        'tags': [unicode],
+        'ingredient_groups': [(unicode, [{
+            'amount': float,
+            'measure': unicode,
+            'name': unicode}])],
+        'data': datetime.datetime,
+    }
+
+    indexes = [
+        {
+            'fields': ['user', 'titleslug'],
+            'unique': True,
+        },
+    ]
+
+    use_dot_notation = True
 
     def __init__(self, title, user_id, ingredients=None, description='',
             instructions='', photo=''):
         self.title = title
         self.titleslug = _slugify(title)
-        #todo: check that titleslug is unique within user
-        self.user_id = user_id
+        self.user = user
         if ingredients is None:
             self.ingredients = []
         else:
@@ -77,13 +96,7 @@ class Recipe(db.Model):
         self.description = description
         self.instructions = instructions
         self.photo = photo
-        self.date = datetime.now()
-
-    def group_ingredients(self):
-        """Return a list of groups of ingredients. Each group is
-        a tuple of title and ingredients.
-        """
-        return (["", self.ingredients])
+        self.date = datetime.utcnow()
 
     def html_instructions(self):
         return markdown2.markdown(self.instructions)
@@ -120,37 +133,6 @@ class Recipe(db.Model):
 
             resized_photo.save(resized_path)
         return config.PHOTO_PATH + os.sep + resized_name
-
-    def update_ingredients(self, ingredient_list):
-        """Update the list of ingredients, adding new ones
-        to the database and deleting ones no longer used.
-        """
-
-        pass
-
-
-class Ingredient(db.Model):
-    __tablename__ = 'ingredients'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    amount = db.Column(db.Float)
-    measure = db.Column(db.String(40))
-    group_name = db.Column(db.String(150))
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'))
-
-    def __init__(self, name, amount, measure='', group_name=''):
-        self.name = name
-        self.amount = amount
-        self.measure = measure
-        self.group_name = group_name
-
-
-class Tag(db.Model):
-    __tablename__ = 'tags'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
 
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')

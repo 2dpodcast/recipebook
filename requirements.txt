@@ -1,7 +1,7 @@
 Flask
-Flask-SQLAlchemy
 Flask-WTF
 Jinja2
-SQLAlchemy
 Markdown2
 PIL
+MongoKit
+pymongo

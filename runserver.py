@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from recipebook import create_app, config
+from recipebook import app, config
 
 if __name__ == '__main__':
-    app = create_app(config)
+    app = app.create_app(config, testing=True)
     app.run(debug=config.DEBUG)

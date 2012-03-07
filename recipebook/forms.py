@@ -6,7 +6,7 @@ import Image
 from flaskext import wtf
 
 from recipebook.models import User
-from recipebook import db, config
+from recipebook import config
 
 
 def valid_username(form, field):

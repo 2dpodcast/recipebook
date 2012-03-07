@@ -1,24 +1,24 @@
 import os
 import unittest
 
-from recipebook import db, models, create_app, config
+from mongokit import Connection
+
+from recipebook import models, config
+from recipebook import app as recipeapp
 
 
 class RecipebookTestCase(unittest.TestCase):
     def setUp(self):
-        config.SQLALCHEMY_DATABASE_URI = config.TEST_DATABASE_URI
-        config.SQLALCHEMY_ECHO = True
         # Disable CSRF to be able to test posting to forms
         config.CSRF_ENABLED = False
-        app = create_app(config)
-        app.config['TESTING'] = True
+        app = recipeapp.create_app(config, testing=True)
         app.test_request_context().push()
-        db.drop_all()
-        db.create_all()
+        connection = Connection(config.MONGODB_HOST, config.MONGODB_PORT)
+        connection.drop_database(config.TEST_DATABASE)
         self.app = app.test_client()
 
     def tearDown(self):
-        pass
+        connection.drop_database(config.TEST_DATABASE)
 
     def add_users(self):
         # Add some test uers
