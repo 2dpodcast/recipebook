@@ -1,7 +1,8 @@
 execfile('./env/bin/activate_this.py',
     dict(__file__='./env/bin/activate_this.py'))
 
-from mongokit import Connection
+from pymongo import Connection
+from mongoengine import connect, ValidationError
 from recipebook import models, config
 from recipebook import app as recipeapp
 from recipebook.test import example_recipes
@@ -14,20 +15,23 @@ def populate():
     app = recipeapp.create_app(config)
     app.test_request_context().push()
 
+    # Clear database if it exists, can't do this through mongoengine
     connection = Connection(config.MONGODB_HOST, config.MONGODB_PORT)
-    connection.register([models.User, models.Recipe])
     connection.drop_database(config.DATABASE)
-    db = connection[config.DATABASE]
 
-    admin = db.User()
-    admin.email = u'admin@nonexistent.com'
-    admin.username = u'admin'
-    admin.set_password(u'admin')
-    admin.level = models.User.ADMIN
+    # Connect with mongoengine
+    connect(config.DATABASE,
+            host=config.MONGODB_HOST, port=config.MONGODB_PORT)
+
+    admin = models.User(
+            username='admin',
+            email='admin@nonexistent.com',
+            level=models.User.ADMIN)
+    admin.set_password('admin')
     admin.save()
 
     for recipe_data in example_recipes.recipes:
-        recipe = db.Recipe()
+        recipe = models.Recipe()
         recipe.load_json(recipe_data)
         recipe.save()
 

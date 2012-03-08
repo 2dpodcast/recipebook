@@ -7,41 +7,29 @@ import Image
 import json
 from werkzeug import generate_password_hash, check_password_hash
 from pymongo import json_util
-from mongokit import Document, OR
+from mongoengine import *
 import markdown2
 
 from recipebook import config
 
 
 class User(Document):
-    __collection__ = 'users'
+    """Represents a user in the database"""
 
-    structure = {
-        '_id': unicode,
-        'email': unicode,
-        'realname': unicode,
-        'password': unicode,
-        'level': int,
-        'registration_date': datetime.datetime,
-    }
-    indexes = [
-        {
-            'fields': '_id',
-            'unique': True,
-        },
-    ]
-    default_values = {
-        'level': 0,
-        'registration_date': datetime.datetime.utcnow,
-        'realname': u'',
-    }
-    use_dot_notation = True
+    username = StringField(primary_key=True)
+    email = EmailField(required=True)
+    real_name = StringField(default='')
+    password = StringField(required=True)
+    level = IntField(required=True, default=0)
+    registration_date = DateTimeField()
+
+    meta = {'collection': 'users'}
 
     #User levels
     (ADMIN, USER) = range(2)
 
     def set_password(self, password):
-        self['password'] = unicode(generate_password_hash(password))
+        self.password = unicode(generate_password_hash(password))
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
@@ -49,67 +37,65 @@ class User(Document):
     def display_name(self):
         return self.realname if self.realname else self.username
 
-    def get_username(self):
-        return self['_id']
 
-    def set_username(self, value):
-        self['_id'] = value
+class Ingredient(EmbeddedDocument):
+    name = StringField(required=True)
+    amount = FloatField()
+    measure = StringField()
 
-    username = property(get_username, set_username)
+
+class IngredientGroup(EmbeddedDocument):
+    group = StringField(default='')
+    ingredients = ListField(EmbeddedDocumentField(Ingredient))
+
+    def load_json(self, data):
+        """Update data with dictionary from json data"""
+
+        self.group = data['group']
+        self.ingredients = []
+        for ingredient in data['ingredients']:
+            self.ingredients.append(Ingredient(
+                name=ingredient['name'],
+                amount=ingredient['amount'],
+                measure=ingredient['measure']))
 
 
 class Recipe(Document):
-    __collection__ = 'recipes'
+    """Represents a recipe document in the database"""
 
-    structure = {
-        'title': unicode,
-        'titleslug': unicode,
-        'description': unicode,
-        'photo': unicode,
-        'instructions': unicode,
-        'user': unicode,
-        'tags': [unicode],
-        'ingredient_groups': [{"group": unicode, "ingredients": [{
-            'amount': OR(float, int),
-            'measure': unicode,
-            'name': unicode}]}],
-        'date': datetime.datetime,
+    title = StringField(required=True)
+    title_slug = StringField(required=True, unique_with='user')
+    description = StringField(default='')
+    photo = StringField(default='')
+    instructions = StringField()
+    user = ReferenceField(User, required=True)
+    tags = ListField(StringField())
+    ingredient_groups = ListField(EmbeddedDocumentField(IngredientGroup))
+    date_added = DateTimeField()
+
+    meta = {
+            'collection': 'recipes',
+            'indexes': [('user', 'title_slug')],
     }
-    indexes = [
-        {
-            'fields': ['user', 'titleslug'],
-            'unique': True,
-        },
-    ]
-    default_values = {
-        'date': datetime.datetime.utcnow,
-        'tags': [],
-        'photo': '',
-        'description': '',
-    }
-
-    use_dot_notation = True
-
-    def old_init(self, title, user_id, ingredients=None, description='',
-            instructions='', photo=''):
-        self.title = title
-        self.titleslug = _slugify(title)
-        self.user = user
-        if ingredients is None:
-            self.ingredients = []
-        else:
-            self.ingredients = ingredients
-        self.description = description
-        self.instructions = instructions
-        self.photo = photo
-        self.date = datetime.utcnow()
 
     def load_json(self, json_data):
         """Update data from json string"""
 
         data = json.loads(json_data, object_hook=json_util.object_hook)
         for key in data:
-            self[key] = data[key]
+            if key == 'title':
+                self.title = data[key]
+                self.title_slug = _slugify(data[key])
+            elif key == 'user':
+                self.user = User.objects.get(username=data[key])
+            elif key == 'ingredient_groups':
+                self.ingredient_groups = []
+                for group in data[key]:
+                    ingredient_group = IngredientGroup()
+                    ingredient_group.load_json(group)
+                    self.ingredient_groups.append(ingredient_group)
+            else:
+                self.__setattr__(key, data[key])
 
     def html_instructions(self):
         return markdown2.markdown(self.instructions)

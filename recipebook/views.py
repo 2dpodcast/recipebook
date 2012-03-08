@@ -3,7 +3,7 @@ from flask import (
         abort, flash, redirect,
         request, current_app, g, session,
         Blueprint)
-from mongokit import Connection
+from mongoengine import connect
 
 from recipebook import models, forms, config
 
@@ -11,15 +11,14 @@ from recipebook import models, forms, config
 recipes = Blueprint('recipes', __name__)
 errors = Blueprint('errors', __name__)
 
-connection = Connection(config.MONGODB_HOST, config.MONGODB_PORT)
-connection.register([models.User, models.Recipe])
-
 
 @recipes.before_app_request
 def before_request():
-    """Check if user is logged in and set the database"""
+    """Check if user is logged in and connect to the database"""
 
-    g.db = connection[current_app.config['DATABASE']]
+    connect(current_app.config.DATABASE,
+            host=current_app.config.MONGODB_HOST,
+            port=current_app.config.MONGODB_PORT)
     g.user = None
     g.owner = False
     g.admin = False
