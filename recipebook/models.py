@@ -55,13 +55,13 @@ class Ingredient(EmbeddedDocument):
 
 
 class IngredientGroup(EmbeddedDocument):
-    group = StringField(default='')
+    title = StringField(default='')
     ingredients = ListField(EmbeddedDocumentField(Ingredient))
 
     def load_json(self, data):
         """Update data with dictionary from json data"""
 
-        self.group = data['group']
+        self.title = data['group']
         self.ingredients = []
         for ingredient in data['ingredients']:
             self.ingredients.append(Ingredient(
@@ -147,7 +147,14 @@ class Recipe(Document):
     def group_ingredients(self):
         """Return a list of ingredient groups and ungrouped ingredients"""
 
-        pass
+        ungrouped_ingredients = []
+        groups = []
+        for group in self.ingredient_groups:
+            if group.title == '':
+                ungrouped_ingredients.extend(group.ingredients)
+            else:
+                groups.append(group)
+        return (groups, ungrouped_ingredients)
 
 
 def create_recipe(title, username, ingredients, description):
