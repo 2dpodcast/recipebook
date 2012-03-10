@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!./env/bin/python
 
 from recipebook import app, config
 
