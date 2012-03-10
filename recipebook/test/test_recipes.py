@@ -52,16 +52,16 @@ class RecipebookTestCase(unittest.TestCase):
 
     def test_add_recipe(self):
         self.add_users()
-        ingredient_groups = {'': [
+        ingredients = {'': [
             models.Ingredient(name='Mince', amount=500.0, measure='g'),
             models.Ingredient(name='Spaghetti', amount=200.0, measure='g'),
         ]}
         recipe = models.create_recipe(
-                'Test Recipe', 'admin', ingredient_groups, 'A new test recipe')
+                'Test Recipe', 'admin', ingredients, 'A new test recipe')
         recipe.save()
         assert(models.Recipe.objects.first().title == 'Test Recipe')
-        assert(models.Recipe.objects.first()
-                .ingredient_groups[''][0].name == 'Mince')
+        assert(models.Recipe.objects.first().ingredient_groups[0].
+                ingredients[0].name == 'Mince')
 
 
 if __name__ == '__main__':
