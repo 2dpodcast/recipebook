@@ -35,7 +35,7 @@ class User(Document):
         return check_password_hash(self.password, password)
 
     def display_name(self):
-        return self.realname if self.realname else self.username
+        return self.real_name if self.real_name else self.username
 
 
 def create_user(email, username, password, level=User.USER):
@@ -121,6 +121,11 @@ class Recipe(Document):
 
             resized_photo.save(resized_path)
         return config.PHOTO_PATH + os.sep + resized_name
+
+    def group_ingredients(self):
+        """Return a list of ingredient groups and ungrouped ingredients"""
+
+        pass
 
 
 def create_recipe(title, username, ingredient_groups, description):

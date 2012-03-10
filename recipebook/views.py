@@ -72,7 +72,7 @@ def user_recipes(username):
         user = models.User.objects.with_id(username)
     except DoesNotExist:
         abort(404)
-    recipes = models.Recipes.objects(user=user)
+    recipes = models.Recipe.objects(user=user)
     if g.user is not None and g.user.id == user.id:
         g.owner = True
     return render_template(
@@ -88,10 +88,10 @@ def recipe(username, recipe_slug):
     if g.user is not None and g.user.username == user.username:
         g.owner = True
     try:
-        recipe = models.Recipe.object(user=user, titleslug=recipe_slug).get()
+        recipe = models.Recipe.objects(user=user, title_slug=recipe_slug).get()
     except DoesNotExist:
         abort(404)
-    return render_template('recipe.html', user=user, recipe=user_recipe)
+    return render_template('recipe.html', user=user, recipe=recipe)
 
 
 @recipes.route('/<username>/<recipe_slug>/edit', methods=('GET', 'POST'))
@@ -107,7 +107,7 @@ def edit_recipe(username, recipe_slug):
     else:
         abort(401)
     try:
-        recipe = models.Recipe.object(user=user, titleslug=recipe_slug).get()
+        recipe = models.Recipe.object(user=user, title_slug=recipe_slug).get()
     except DoesNotExist:
         abort(404)
     form = forms.RecipeEdit(request.form, csrf_enabled=config.CSRF_ENABLED)
