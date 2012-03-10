@@ -54,22 +54,6 @@ class Ingredient(EmbeddedDocument):
     measure = StringField()
 
 
-class IngredientGroup(EmbeddedDocument):
-    group = StringField(default='')
-    ingredients = ListField(EmbeddedDocumentField(Ingredient))
-
-    def load_json(self, data):
-        """Update data with dictionary from json data"""
-
-        self.group = data['group']
-        self.ingredients = []
-        for ingredient in data['ingredients']:
-            self.ingredients.append(Ingredient(
-                name=ingredient['name'],
-                amount=ingredient['amount'],
-                measure=ingredient['measure']))
-
-
 class Recipe(Document):
     """Represents a recipe document in the database"""
 
@@ -80,7 +64,7 @@ class Recipe(Document):
     instructions = StringField()
     user = ReferenceField(User, required=True)
     tags = ListField(StringField())
-    ingredient_groups = ListField(EmbeddedDocumentField(IngredientGroup))
+    ingredient_groups = DictField()
     date_added = DateTimeField()
 
     meta = {
@@ -98,12 +82,6 @@ class Recipe(Document):
                 self.title_slug = _slugify(data[key])
             elif key == 'user':
                 self.user = User.objects.get(username=data[key])
-            elif key == 'ingredient_groups':
-                self.ingredient_groups = []
-                for group in data[key]:
-                    ingredient_group = IngredientGroup()
-                    ingredient_group.load_json(group)
-                    self.ingredient_groups.append(ingredient_group)
             else:
                 self.__setattr__(key, data[key])
 
@@ -145,20 +123,18 @@ class Recipe(Document):
         return config.PHOTO_PATH + os.sep + resized_name
 
 
-def create_recipe(title, username, ingredients, description):
+def create_recipe(title, username, ingredient_groups, description):
     """Create a new recipe
 
     ingredients is a dict with ingredient group names as keys
     and lists of ingredients for values
     """
 
-    recipe = Recipe(title=title, description=description)
+    recipe = Recipe(title=title,
+            description=description,
+            ingredient_groups=ingredient_groups)
     recipe.user = User.objects.with_id(username)
     recipe.title_slug = _slugify(title)
-    ingredient_groups = [
-            IngredientGroup(group=k, ingredients=v)
-            for k, v in ingredients.items()]
-    recipe.ingredient_groups = ingredient_groups
     recipe.date = datetime.datetime.utcnow()
     return recipe
 
