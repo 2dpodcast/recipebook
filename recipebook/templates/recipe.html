@@ -2,6 +2,7 @@
 
 {% block content %}
 <h1>{{ recipe.title }}</h1>
+<p>Created by <a href="{{ url_for('.user_recipes', username=user.username) }}">{{ user.display_name() }}</a>.</p>
 
 {% if g.owner or g.admin %}
 <p><a href="{{ url_for('.edit_recipe', username=recipe.user.username, recipe_slug=recipe.titleslug) }}">Edit this recipe.</a></p>
