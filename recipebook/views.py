@@ -4,6 +4,7 @@ from flask import (
         request, current_app, g, session,
         Blueprint)
 from mongoengine import connect
+from mongoengine.queryset import DoesNotExist
 
 from recipebook import models, forms, config
 
@@ -16,22 +17,21 @@ errors = Blueprint('errors', __name__)
 def before_request():
     """Check if user is logged in and connect to the database"""
 
-    connect(current_app.config.DATABASE,
-            host=current_app.config.MONGODB_HOST,
-            port=current_app.config.MONGODB_PORT)
+    connect(current_app.config['DATABASE'],
+            host=current_app.config['MONGODB_HOST'],
+            port=current_app.config['MONGODB_PORT'])
     g.user = None
     g.owner = False
     g.admin = False
     if 'user_id' in session:
-        g.user = models.User.query.get(session['user_id'])
+        g.user = models.User.objects.with_id(session['user_id'])
         if g.user.level == models.User.ADMIN:
             g.admin = True
 
 
 @recipes.route('/')
 def index():
-    latest_recipes = (models.Recipe.query.order_by(
-        db.desc(models.Recipe.date)).limit(config.NUMBER_HOME_RECIPES))
+    latest_recipes = models.Recipe.objects.order_by('-date').limit(config.NUMBER_HOME_RECIPES)
     return render_template('index.html', recipes=latest_recipes)
 
 
@@ -40,7 +40,7 @@ def login():
     form = forms.Login(request.form, csrf_enabled=config.CSRF_ENABLED)
     if request.method == 'POST' and form.validate():
         flash(u'Successfully logged in as %s' % form.user.username)
-        session['user_id'] = form.user.id
+        session['user_id'] = form.user.username
         return redirect(url_for('recipes.index'))
     return render_template('login.html', form=form)
 
@@ -50,11 +50,12 @@ def register():
     form = forms.Register(request.form, csrf_enabled=config.CSRF_ENABLED)
     if request.method == 'POST' and form.validate():
         user = models.User(
-                form.email.data, form.username.data,
-                form.password.data, models.User.USER)
-        user.realname = form.realname.data
-        db.session.add(user)
-        db.session.commit()
+                email=form.email.data,
+                username=form.username.data,
+                real_name=form.realname.data,
+                level=models.User.USER)
+        user.set_password(form.password.data)
+        db.save()
         return redirect(url_for('recipes.login'))
     return render_template('register.html', form=form)
 
@@ -67,36 +68,48 @@ def logout():
 
 @recipes.route('/<username>')
 def user_recipes(username):
-    user = models.User.query.filter_by(username=username).first_or_404()
+    try:
+        user = models.User.objects.with_id(username)
+    except DoesNotExist:
+        abort(404)
+    recipes = models.Recipes.objects(user=user)
     if g.user is not None and g.user.id == user.id:
         g.owner = True
     return render_template(
-            'user_recipes.html', user=user, recipes=user.recipes.all())
+            'user_recipes.html', user=user, recipes=recipes)
 
 
 @recipes.route('/<username>/<recipe_slug>')
 def recipe(username, recipe_slug):
-    user = models.User.query.filter_by(username=username).first_or_404()
-    if g.user is not None and g.user.id == user.id:
+    try:
+        user = models.User.objects.with_id(username)
+    except DoesNotExist:
+        abort(404)
+    if g.user is not None and g.user.username == user.username:
         g.owner = True
-    user_recipe = (models.Recipe.query.filter(db.and_(
-        models.Recipe.user_id == user.id,
-        models.Recipe.titleslug == recipe_slug)).first_or_404())
+    try:
+        recipe = models.Recipe.object(user=user, titleslug=recipe_slug).get()
+    except DoesNotExist:
+        abort(404)
     return render_template('recipe.html', user=user, recipe=user_recipe)
 
 
 @recipes.route('/<username>/<recipe_slug>/edit', methods=('GET', 'POST'))
 def edit_recipe(username, recipe_slug):
-    user = models.User.query.filter_by(username=username).first_or_404()
-    if g.user is not None and g.user.id == user.id:
+    try:
+        user = models.User.objects.with_id(username)
+    except DoesNotExist:
+        abort(404)
+    if g.user is not None and g.user.username == user.username:
         g.owner = True
     elif g.admin:
         pass
     else:
         abort(401)
-    user_recipe = models.Recipe.query.filter(db.and_(
-            models.Recipe.user_id == user.id,
-            models.Recipe.titleslug == recipe_slug)).first_or_404()
+    try:
+        recipe = models.Recipe.object(user=user, titleslug=recipe_slug).get()
+    except DoesNotExist:
+        abort(404)
     form = forms.RecipeEdit(request.form, csrf_enabled=config.CSRF_ENABLED)
     if request.method == 'POST' and form.validate():
         user_recipe.photo = form.save_photo()

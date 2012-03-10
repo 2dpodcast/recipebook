@@ -38,6 +38,16 @@ class User(Document):
         return self.realname if self.realname else self.username
 
 
+def create_user(email, username, password, level=User.USER):
+    user = User(email=email, username=username)
+    if level in (User.USER, User.ADMIN):
+        user.level = level
+    else:
+        raise ValueError("Invalid user level")
+    user.set_password(password)
+    return user
+
+
 class Ingredient(EmbeddedDocument):
     name = StringField(required=True)
     amount = FloatField()
@@ -133,6 +143,24 @@ class Recipe(Document):
 
             resized_photo.save(resized_path)
         return config.PHOTO_PATH + os.sep + resized_name
+
+
+def create_recipe(title, username, ingredients, description):
+    """Create a new recipe
+
+    ingredients is a dict with ingredient group names as keys
+    and lists of ingredients for values
+    """
+
+    recipe = Recipe(title=title, description=description)
+    recipe.user = User.objects.with_id(username)
+    recipe.title_slug = _slugify(title)
+    ingredient_groups = [
+            IngredientGroup(group=k, ingredients=v)
+            for k, v in ingredients.items()]
+    recipe.ingredient_groups = ingredient_groups
+    recipe.date = datetime.datetime.utcnow()
+    return recipe
 
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
