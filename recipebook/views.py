@@ -107,7 +107,7 @@ def edit_recipe(username, recipe_slug):
     else:
         abort(401)
     try:
-        recipe = models.Recipe.object(user=user, title_slug=recipe_slug).get()
+        user_recipe = models.Recipe.objects(user=user, title_slug=recipe_slug).get()
     except DoesNotExist:
         abort(404)
     form = forms.RecipeEdit(request.form, csrf_enabled=config.CSRF_ENABLED)
