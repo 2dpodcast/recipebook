@@ -6,7 +6,7 @@ import Image
 
 import json
 from werkzeug import generate_password_hash, check_password_hash
-from pymongo import json_util
+from bson import json_util
 from mongoengine import *
 import markdown2
 

@@ -4,6 +4,7 @@ from hashlib import sha1
 import Image
 
 from flask.ext import wtf
+from mongoengine import Q
 
 from recipebook.models import User
 from recipebook import config
@@ -47,9 +48,9 @@ class Login(wtf.Form):
         if not rv:
             return False
 
-        user = User.query.filter(db.or_(
-            User.username == self.login.data,
-            User.email == self.login.data)).first()
+        user = User.objects(
+            Q(username=self.login.data) |
+            Q(email=self.login.data)).first()
         if user is None:
             self.login.errors.append('Unknown user name or email address')
             return False
@@ -86,12 +87,12 @@ class Register(wtf.Form):
             self.username.errors.append('Sorry, this user name is not allowed')
             return False
 
-        user = User.query.filter(User.username == self.username.data).first()
+        user = User.objects(username=self.username.data).first()
         if user is not None:
             self.username.errors.append('This user name is already taken')
             return False
 
-        user = User.query.filter(User.email == self.email.data).first()
+        user = User.objects(email=self.email.data).first()
         if user is not None:
             self.username.errors.append("A user with that email address "
                     "is already registered")
