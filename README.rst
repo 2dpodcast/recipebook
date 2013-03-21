@@ -14,11 +14,16 @@ To set up a virtualenv for development::
 
     virtualenv --no-site-packages env
     source env/bin/activate
-    pip install -E env -r requirements.txt
+    pip install -r requirements.txt
+
+Extra packages required::
+
+    sudo yum install mongodb mongodb-server
+    sudo systemctl enable mongod.service
 
 Then initialise a database with some test data::
 
-    fab devinit
+    fab populate
 
 To run tests everything::
 
