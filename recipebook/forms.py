@@ -3,7 +3,7 @@ import re
 from hashlib import sha1
 import Image
 
-from flaskext import wtf
+from flask.ext import wtf
 
 from recipebook.models import User
 from recipebook import config
@@ -125,12 +125,6 @@ class RecipeEdit(wtf.Form):
     ingredient_groups = wtf.FieldList(
             wtf.FormField(IngredientGroup),
             min_entries=MIN_GROUPS, max_entries=20)
-
-    def validate(self):
-        rv = wtf.Form.validate(self)
-        if not rv:
-            return False
-        return True
 
     def save_photo(self):
         self.photo.file.seek(0)

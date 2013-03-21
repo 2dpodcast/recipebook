@@ -3,7 +3,7 @@
 
 {% block content %}
 <form action="{{ url_for('recipes.login') }}" method="POST">
-  {{ form.csrf }}
+  {{ form.csrf_token }}
   {{ field_with_errors(form.login, size=25, autofocus="autofocus") }}
   {{ field_with_errors(form.password, size=25) }}
   <p><input type="submit" value="Login"></p>

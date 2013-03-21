@@ -57,7 +57,7 @@ function removeIngredient(groupName,row) {
 {% block content %}
 <h1>{{ recipe.title }}</h1>
 <form action="{{ url_for('recipes.edit_recipe', username=recipe.user.username, recipe_slug=recipe.titleslug) }}" method="POST" enctype="multipart/form-data">
-  {{ form.csrf }}
+  {{ form.csrf_token }}
   {{ field_with_errors(form.description, style="width:300px", rows=6, autofocus="autofocus") }}
   {{ field_with_errors(form.photo) }}
 
