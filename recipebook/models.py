@@ -78,7 +78,7 @@ class Recipe(Document):
     description = StringField(default='')
     photo = StringField(default='')
     instructions = StringField()
-    user = ReferenceField(User, required=True)
+    user = ReferenceField(User, dbref=True, required=True)
     tags = ListField(StringField())
     ingredient_groups = ListField(EmbeddedDocumentField(IngredientGroup))
     date_added = DateTimeField()
