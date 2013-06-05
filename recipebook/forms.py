@@ -4,9 +4,8 @@ from hashlib import sha1
 import Image
 
 from flask.ext import wtf
-from mongoengine import Q
 
-from recipebook.models import User
+from recipebook.models import User, get_user
 from recipebook import config
 
 
@@ -48,9 +47,7 @@ class Login(wtf.Form):
         if not rv:
             return False
 
-        user = User.objects(
-            Q(username=self.login.data) |
-            Q(email=self.login.data)).first()
+        user = get_user(self.login.data)
         if user is None:
             self.login.errors.append('Unknown user name or email address')
             return False

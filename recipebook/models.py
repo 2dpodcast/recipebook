@@ -7,7 +7,10 @@ import Image
 import json
 from werkzeug import generate_password_hash, check_password_hash
 from bson import json_util
-from mongoengine import *
+from mongoengine import (
+        Document, EmbeddedDocument, Q,
+        StringField, EmailField, IntField, FloatField,
+        DateTimeField, ListField, EmbeddedDocumentField, ReferenceField)
 import markdown2
 
 from recipebook import config
@@ -46,6 +49,14 @@ def create_user(email, username, password, level=User.USER):
         raise ValueError("Invalid user level")
     user.set_password(password)
     return user
+
+
+def get_user(login_name):
+    """Get a user with either the username or email"""
+
+    return User.objects(
+        Q(username=login_name) |
+        Q(email=login_name)).first()
 
 
 class Ingredient(EmbeddedDocument):
