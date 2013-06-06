@@ -31,7 +31,8 @@ def before_request():
 
 @recipes.route('/')
 def index():
-    latest_recipes = models.Recipe.objects.order_by('-date').limit(config.NUMBER_HOME_RECIPES)
+    latest_recipes = (models.Recipe.objects.
+        order_by('-date_added').limit(config.NUMBER_HOME_RECIPES))
     return render_template('index.html', recipes=latest_recipes)
 
 

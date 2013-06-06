@@ -98,7 +98,7 @@ class Recipe(Document):
     tags = ListField(StringField())
     ungrouped_ingredients = ListField(EmbeddedDocumentField(Ingredient))
     ingredient_groups = ListField(EmbeddedDocumentField(IngredientGroup))
-    date_added = DateTimeField()
+    date_added = DateTimeField(required=True)
 
     meta = {
             'collection': 'recipes',
@@ -154,7 +154,7 @@ def create_recipe(title, username, ingredients, description):
     del(ingredient_groups[''])
     recipe.ungrouped_ingredients = ungrouped_ingredients
     recipe.ingredient_groups = ingredient_groups
-    recipe.date = datetime.datetime.utcnow()
+    recipe.date_added = datetime.datetime.utcnow()
     return recipe
 
 

@@ -1,6 +1,7 @@
 execfile('./env/bin/activate_this.py',
     dict(__file__='./env/bin/activate_this.py'))
 
+import datetime
 from pymongo import Connection
 from mongoengine import connect, ValidationError
 from recipebook import models, config
@@ -33,6 +34,7 @@ def populate():
     for recipe_data in example_recipes.recipes:
         recipe = models.Recipe()
         recipe.load_json(recipe_data)
+        recipe.date_added = datetime.datetime.utcnow()
         recipe.save()
 
 

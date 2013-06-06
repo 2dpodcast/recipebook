@@ -62,7 +62,7 @@ def load_gourmet(gourmet_file):
                 title_slug=slugify(title),
                 description='',
                 instructions=instructions,
-                date=datetime.datetime.utcnow(),
+                date_added=datetime.datetime.utcnow(),
                 ungrouped_ingredients=ungrouped_ingredients,
                 ingredient_groups=ingredient_groups,
                 photo=image_name)
