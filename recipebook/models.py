@@ -2,7 +2,6 @@ import os
 import re
 import datetime
 from unicodedata import normalize
-import Image
 
 import json
 from werkzeug import generate_password_hash, check_password_hash
@@ -14,6 +13,7 @@ from mongoengine import (
 import markdown2
 
 from recipebook import config
+from recipebook import photos
 
 
 class User(Document):
@@ -64,21 +64,26 @@ class Ingredient(EmbeddedDocument):
     amount = FloatField()
     measure = StringField()
 
+    @classmethod
+    def from_json(cls, data):
+        return cls(
+                name=data['name'],
+                amount=data['amount'],
+                measure=data['measure'])
+
 
 class IngredientGroup(EmbeddedDocument):
     title = StringField(default='')
     ingredients = ListField(EmbeddedDocumentField(Ingredient))
 
-    def load_json(self, data):
+    @classmethod
+    def from_json(cls, data):
         """Update data with dictionary from json data"""
 
-        self.title = data['group']
-        self.ingredients = []
-        for ingredient in data['ingredients']:
-            self.ingredients.append(Ingredient(
-                name=ingredient['name'],
-                amount=ingredient['amount'],
-                measure=ingredient['measure']))
+        title = data['group']
+        ingredients = [
+                Ingredient.from_json(item) for item in data['ingredients']]
+        return cls(title=title, ingredients=ingredients)
 
 
 class Recipe(Document):
@@ -91,6 +96,7 @@ class Recipe(Document):
     instructions = StringField()
     user = ReferenceField(User, dbref=True, required=True)
     tags = ListField(StringField())
+    ungrouped_ingredients = ListField(EmbeddedDocumentField(Ingredient))
     ingredient_groups = ListField(EmbeddedDocumentField(IngredientGroup))
     date_added = DateTimeField()
 
@@ -106,14 +112,18 @@ class Recipe(Document):
         for key in data:
             if key == 'title':
                 self.title = data[key]
-                self.title_slug = _slugify(data[key])
+                self.title_slug = slugify(data[key])
             elif key == 'user':
                 self.user = User.objects.get(username=data[key])
+            elif key == 'ungrouped_ingredients':
+                self.ungrouped_ingredients = []
+                for item in data[key]:
+                    ingredient = Ingredient.from_json(item)
+                    self.ungrouped_ingredients.append(ingredient)
             elif key == 'ingredient_groups':
                 self.ingredient_groups = []
                 for group in data[key]:
-                    ingredient_group = IngredientGroup()
-                    ingredient_group.load_json(group)
+                    ingredient_group = IngredientGroup.from_json(group)
                     self.ingredient_groups.append(ingredient_group)
             else:
                 self.__setattr__(key, data[key])
@@ -122,50 +132,7 @@ class Recipe(Document):
         return markdown2.markdown(self.instructions)
 
     def show_photo(self, width, height):
-        """ Return the path to a photo with the specified dimensions.
-        If it doesn't exist, it is created
-        """
-
-        #PHOTO_PATH is used in rendered web page whereas PHOTO_DIRECTORY is
-        # the full directory on the server
-        resized_name = self.photo + '_%dx%d.jpg' % (width, height)
-        resized_path = config.PHOTO_DIRECTORY + os.sep + resized_name
-        if not os.path.isfile(resized_path):
-            photo = Image.open(
-                    config.PHOTO_DIRECTORY + os.sep + self.photo + '.jpg')
-
-            current_ratio = float(photo.size[0]) / float(photo.size[1])
-            desired_ratio = float(width) / float(height)
-            box = [0, 0, photo.size[0], photo.size[1]]
-
-            if current_ratio > desired_ratio:
-                width_crop = int(round(
-                    (photo.size[0] - desired_ratio * photo.size[1]) / 2.))
-                box[0] = width_crop
-                box[2] -= width_crop
-            else:
-                height_crop = int(round(
-                    (photo.size[1] - photo.size[0] / desired_ratio) / 2.))
-                box[1] = height_crop
-                box[3] -= height_crop
-
-            resized_photo = photo.crop(box).resize(
-                    (width, height), Image.BILINEAR)
-
-            resized_photo.save(resized_path)
-        return config.PHOTO_PATH + os.sep + resized_name
-
-    def group_ingredients(self):
-        """Return a list of ingredient groups and ungrouped ingredients"""
-
-        ungrouped_ingredients = []
-        groups = []
-        for group in self.ingredient_groups:
-            if group.title == '':
-                ungrouped_ingredients.extend(group.ingredients)
-            else:
-                groups.append(group)
-        return (groups, ungrouped_ingredients)
+        return photos.url(self.photo, width, height)
 
 
 def create_recipe(title, username, ingredients, description):
@@ -177,10 +144,15 @@ def create_recipe(title, username, ingredients, description):
 
     recipe = Recipe(title=title, description=description)
     recipe.user = User.objects.with_id(username)
-    recipe.title_slug = _slugify(title)
+    recipe.title_slug = slugify(title)
     ingredient_groups = [
             IngredientGroup(group=k, ingredients=v)
             for k, v in ingredients.items()]
+    # Ungrouped ingredients are in a group with no name,
+    # so remove them and put them in their own list
+    ungrouped_ingredients = ingredient_groups['']
+    del(ingredient_groups[''])
+    recipe.ungrouped_ingredients = ungrouped_ingredients
     recipe.ingredient_groups = ingredient_groups
     recipe.date = datetime.datetime.utcnow()
     return recipe
@@ -189,7 +161,7 @@ def create_recipe(title, username, ingredients, description):
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
 
 
-def _slugify(text, delim=u'-'):
+def slugify(text, delim=u'-'):
     """Generates an ASCII-only slug."""
 
     result = []

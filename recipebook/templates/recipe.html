@@ -16,9 +16,7 @@
 
 <h2>Ingredients</h2>
 
-{% set ingredient_groups,remaining_ingredients = recipe.group_ingredients() %}
-
-{% for ingredient_group in ingredient_groups %}
+{% for ingredient_group in recipe.ingredient_groups %}
 <h3>{{ ingredient_group.title }}</h3>
 <ul>
 {% for ingredient in ingredient_group.ingredients %}
@@ -27,9 +25,9 @@
 </ul>
 {% endfor %}
 
-{% if remaining_ingredients %}
+{% if recipe.ungrouped_ingredients %}
 <ul>
-{% for ingredient in remaining_ingredients %}
+{% for ingredient in recipe.ungrouped_ingredients %}
 <li>{{ ingredient.amount }} {{ ingredient.measure }} {{ ingredient.name }}</li>
 {% endfor %}
 </ul>

@@ -1,10 +1,11 @@
 Flask==0.9
 Flask-WTF==0.8.3
 Jinja2==2.6
-PIL==1.1.7
+pillow>=2.0.0
 WTForms==1.0.3
 Werkzeug==0.8.3
 markdown2==2.1.0
 mongoengine==0.7.9
 pymongo==2.4.2
 wsgiref==0.1.2
+defusedxml

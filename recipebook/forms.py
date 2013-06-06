@@ -1,12 +1,10 @@
 import os
 import re
-from hashlib import sha1
-import Image
 
 from flask.ext import wtf
 
 from recipebook.models import User, get_user
-from recipebook import config
+from recipebook import config, photos
 
 
 def valid_username(form, field):
@@ -18,12 +16,7 @@ def valid_username(form, field):
 def valid_photo(form, field):
     if field.file.filename == '':
         return
-    try:
-        field.image = Image.open(field.file)
-        # Image can't be used after calling verify, so we have to
-        # open it again later
-        field.image.verify()
-    except:
+    if not photos.verify(field.file):
         raise wtf.ValidationError("Photo is not a recognised image type")
 
 
@@ -125,8 +118,5 @@ class RecipeEdit(wtf.Form):
             min_entries=MIN_GROUPS, max_entries=20)
 
     def save_photo(self):
-        self.photo.file.seek(0)
-        image = Image.open(self.photo.file)
-        file_hash = sha1(image.tostring()).hexdigest()
-        image.save(os.path.join(config.PHOTO_DIRECTORY, file_hash + '.jpg'))
-        return file_hash
+        name = photos.save(self.photo.file)
+        return name
