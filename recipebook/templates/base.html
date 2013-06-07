@@ -3,8 +3,11 @@
 <html>
 
   <head>
-    <title>{{ title }}</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='screen.css') }}" media="screen, tv, projection" title="Default" />
+    <title>{% block title %}RecipeBook{% endblock title %}</title>
+    <link href='http://fonts.googleapis.com/css?family=Marcellus|Noto+Sans:400,700'
+        rel='stylesheet' type='text/css'>
+    <link href="{{ url_for('static', filename='screen.css') }}"
+        rel="stylesheet" type="text/css" media="screen, tv, projection" title="Default" />
     <!--[if lt IE 9]>
     <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
@@ -14,9 +17,9 @@
 
   <body>
 
-  <div id="container">
+  <header class="page_head">
+  <div class="container">
 
-  <header>
   <h1><a href="{{ url_for('recipes.index') }}">Recipe Book</a></h1>
   <p>{% if g.user %}
     <a href="{{ url_for('recipes.logout') }}">Logout {{ g.user.username }}</a>
@@ -24,9 +27,11 @@
     <a href="{{ url_for('recipes.register') }}">Register</a> &middot;
     <a href="{{ url_for('recipes.login') }}">Login</a>
   {% endif %}</p>
+
+  </div>
   </header>
 
-  <div>
+  <div class="container">
 
     {% block content %}
     {% endblock content %}
@@ -35,8 +40,6 @@
 
   <footer>
   </footer>
-
-  </div>
 
   </body>
 

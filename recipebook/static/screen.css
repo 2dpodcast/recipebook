@@ -1,44 +1,105 @@
 article, section, aside, hgroup, nav, header, footer, figure, figcaption {
-  display: block;
+    display: block;
+    margin: 0;
+    padding: 0;
 }
+
+div {
+    margin: 0;
+    padding: 0;
+}
+
 
 body {
-  font-family: sans-serif;
-  color: #333333;
-  text-align: center;
+    font-family: "Noto Sans", "DejaVu Sans", "Arial", sans-serif;
+    font-size:14px;
+    background-color: #f2f4f6;
+    color: #333333;
+    text-align: center;
+    margin: 0;
+    padding: 0;
 }
 
-#container {
-  margin: 0 auto;
-  width: 800px;
-  text-align: left;
+div.container {
+    margin: 0 auto;
+    width: 800px;
+    text-align: left;
 }
 
 /* Header */
 
-header {
-  display: block;
-  position: relative;
-  height: 120px;
+header.page_head {
+    display: block;
+    background-color: #2f3740;
+    border-bottom: 5px solid #3f4851;
+    color: #dd662d;
+    margin-bottom: 2em;
 }
 
-header p {
-  position: absolute;
-  top: 5px;
-  right: 5px;
+header.page_head div {
+    position: relative;
+    height: 90px;
 }
 
-header h1 {
-  position: absolute;
-  bottom: 10px;
-  left: 0;
+header.page_head p {
+    position: absolute;
+    padding: 0;
+    margin: 0;
+    bottom: 21px;
+    right: 5px;
+}
+
+header.page_head h1 {
+    font-family: "Marcellus", serif;
+    position: absolute;
+    bottom: 15px;
+    padding: 0;
+    margin: 0;
+    left: 0;
+    font-weight: 400;
+    font-size: 40px;
+}
+
+header.page_head h1 a:hover {
+    text-decoration: none;
+}
+
+article.recipe footer {
+    margin-top: 2.2em;
+    border-top: 3px solid #b9bec3;
+}
+
+/* Headings */
+h1, h2, h3, h4, h4 {
+    font-family: "Marcellus", serif;
+    padding: 0;
+    margin: 1em 0 1em 0;
+    font-weight: 400;
+}
+
+h1 {
+    font-size: 2em;
+}
+h2 {
+    font-size: 1.5em;
+}
+h3 {
+    font-size: 1.2em;
+}
+
+/* Links */
+a {
+    color: #dd662d;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
 }
 
 /* Forms */
 
 div.form_field {
-  width: 65%;
-  margin-bottom: 1em;
+    width: 65%;
+    margin-bottom: 1em;
 }
-
-

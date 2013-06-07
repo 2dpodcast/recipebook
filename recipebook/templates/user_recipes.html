@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block title %}
+RecipeBook - {{ user.display_name() }}'s Recipes
+{% endblock title %}
+
 {% block content %}
 <h1>{{ user.display_name() }}'s Recipes</h1>
 

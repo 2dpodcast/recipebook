@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% from '_macros.html' import field_with_errors %}
 
+{% block title %}
+RecipeBook - Register
+{% endblock title %}
+
 {% block content %}
 <form action="{{ url_for('recipes.register') }}" method="POST">
   {{ form.csrf_token }}
