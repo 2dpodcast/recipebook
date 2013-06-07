@@ -56,7 +56,7 @@ def register():
                 real_name=form.realname.data,
                 level=models.User.USER)
         user.set_password(form.password.data)
-        db.save()
+        user.save()
         return redirect(url_for('recipes.login'))
     return render_template('register.html', form=form)
 
@@ -115,8 +115,8 @@ def edit_recipe(username, recipe_slug):
         abort(404)
     form = forms.RecipeEdit(request.form, csrf_enabled=config.CSRF_ENABLED)
     if request.method == 'POST' and form.validate():
-        user_recipe.photo = form.save_photo()
-        db.session.commit()
+        form.update_recipe(user_recipe)
+        user_recipe.save()
         return redirect(url_for(
             'recipes.recipe', username=username, recipe_slug=recipe_slug))
     return render_template(

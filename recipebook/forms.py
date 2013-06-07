@@ -117,6 +117,5 @@ class RecipeEdit(wtf.Form):
             wtf.FormField(IngredientGroup),
             min_entries=MIN_GROUPS, max_entries=20)
 
-    def save_photo(self):
-        name = photos.save(self.photo.file)
-        return name
+    def save_recipe(self, recipe):
+        recipe.photo = photos.save(self.photo.file)

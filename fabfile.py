@@ -10,26 +10,34 @@ from recipebook.test import example_recipes
 from fabric.api import *
 
 
-def populate():
-    """Populate database with test data"""
+def _connect():
+    # Connect with mongoengine
+    connect(config.DATABASE,
+            host=config.MONGODB_HOST, port=config.MONGODB_PORT)
 
-    app = recipeapp.create_app(config)
-    app.test_request_context().push()
+
+def empty():
+    """Delete database"""
 
     # Clear database if it exists, can't do this through mongoengine
     connection = Connection(config.MONGODB_HOST, config.MONGODB_PORT)
     connection.drop_database(config.DATABASE)
 
-    # Connect with mongoengine
-    connect(config.DATABASE,
-            host=config.MONGODB_HOST, port=config.MONGODB_PORT)
 
+def add_admin():
+    _connect()
     admin = models.User(
             username='admin',
             email='admin@nonexistent.com',
             level=models.User.ADMIN)
     admin.set_password('admin')
     admin.save()
+
+
+def populate():
+    """Populate database with test data"""
+    _connect()
+    _add_admin()
 
     for recipe_data in example_recipes.recipes:
         recipe = models.Recipe()
