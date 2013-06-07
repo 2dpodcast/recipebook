@@ -20,7 +20,7 @@
 <h3>{{ ingredient_group.title }}</h3>
 <ul>
 {% for ingredient in ingredient_group.ingredients %}
-<li>{{ ingredient.amount }} {{ ingredient.measure }} {{ ingredient.name }}</li>
+<li>{{ ingredient|safe }}</li>
 {% endfor %}
 </ul>
 {% endfor %}
@@ -28,7 +28,7 @@
 {% if recipe.ungrouped_ingredients %}
 <ul>
 {% for ingredient in recipe.ungrouped_ingredients %}
-<li>{{ ingredient.amount }} {{ ingredient.measure }} {{ ingredient.name }}</li>
+<li>{{ ingredient|safe }}</li>
 {% endfor %}
 </ul>
 {% endif %}

@@ -10,10 +10,8 @@ from mongoengine import (
         Document, EmbeddedDocument, Q,
         StringField, EmailField, IntField, FloatField,
         DateTimeField, ListField, EmbeddedDocumentField, ReferenceField)
-import markdown2
 
 from recipebook import config
-from recipebook import photos
 
 
 class User(Document):
@@ -127,12 +125,6 @@ class Recipe(Document):
                     self.ingredient_groups.append(ingredient_group)
             else:
                 self.__setattr__(key, data[key])
-
-    def html_instructions(self):
-        return markdown2.markdown(self.instructions)
-
-    def show_photo(self, width, height):
-        return photos.url(self.photo, width, height)
 
 
 def create_recipe(title, username, ingredients, description):

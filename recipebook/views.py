@@ -6,7 +6,7 @@ from flask import (
 from mongoengine import connect
 from mongoengine.queryset import DoesNotExist
 
-from recipebook import models, forms, config
+from recipebook import models, forms, config, renderers
 
 
 recipes = Blueprint('recipes', __name__)
@@ -73,7 +73,7 @@ def user_recipes(username):
         user = models.User.objects.with_id(username)
     except DoesNotExist:
         abort(404)
-    recipes = models.Recipe.objects(user=user)
+    recipes = models.Recipe.objects(user=user).order_by('-date_added')
     if g.user is not None and g.user.id == user.id:
         g.owner = True
     return render_template(
@@ -92,7 +92,8 @@ def recipe(username, recipe_slug):
         recipe = models.Recipe.objects(user=user, title_slug=recipe_slug).get()
     except DoesNotExist:
         abort(404)
-    return render_template('recipe.html', user=user, recipe=recipe)
+    return render_template(
+            'recipe.html', user=user, recipe=renderers.RecipeView(recipe))
 
 
 @recipes.route('/<username>/<recipe_slug>/edit', methods=('GET', 'POST'))
@@ -108,7 +109,8 @@ def edit_recipe(username, recipe_slug):
     else:
         abort(401)
     try:
-        user_recipe = models.Recipe.objects(user=user, title_slug=recipe_slug).get()
+        user_recipe = models.Recipe.objects(
+                user=user, title_slug=recipe_slug).get()
     except DoesNotExist:
         abort(404)
     form = forms.RecipeEdit(request.form, csrf_enabled=config.CSRF_ENABLED)
