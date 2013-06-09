@@ -80,7 +80,7 @@ def save(data):
     # Resize image if it is too large
     max_dim = max(image.size)
     if max_dim > MAX_ALLOWED_DIM:
-        scale = MAX_ALLOWED_DIM / max_dim
+        scale = float(MAX_ALLOWED_DIM) / float(max_dim)
         new_dims = [int(dim * scale) for dim in image.size]
         image = image.resize(new_dims, Image.BILINEAR)
     file_hash = sha1(image.tostring()).hexdigest()

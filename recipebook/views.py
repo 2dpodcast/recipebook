@@ -6,7 +6,7 @@ from flask import (
 from mongoengine import connect
 from mongoengine.queryset import DoesNotExist
 
-from recipebook import models, forms, config, renderers
+from recipebook import config, forms, models, photos, renderers
 
 
 recipes = Blueprint('recipes', __name__)
@@ -38,7 +38,7 @@ def index():
 
 @recipes.route('/login', methods=('GET', 'POST'))
 def login():
-    form = forms.Login(request.form, csrf_enabled=config.CSRF_ENABLED)
+    form = forms.Login(csrf_enabled=config.CSRF_ENABLED)
     if request.method == 'POST' and form.validate():
         flash(u'Successfully logged in as %s' % form.user.username)
         session['user_id'] = form.user.username
@@ -48,7 +48,7 @@ def login():
 
 @recipes.route('/register', methods=('GET', 'POST'))
 def register():
-    form = forms.Register(request.form, csrf_enabled=config.CSRF_ENABLED)
+    form = forms.Register(csrf_enabled=config.CSRF_ENABLED)
     if request.method == 'POST' and form.validate():
         user = models.User(
                 email=form.email.data,
@@ -113,13 +113,19 @@ def edit_recipe(username, recipe_slug):
                 user=user, title_slug=recipe_slug).get()
     except DoesNotExist:
         abort(404)
-    form = forms.RecipeEdit(request.form, csrf_enabled=config.CSRF_ENABLED)
-    if request.method == 'POST' and form.validate():
-        form.update_recipe(user_recipe)
-        user_recipe.save()
-        return redirect(url_for(
-            'recipes.recipe', username=username, recipe_slug=recipe_slug))
-    return render_template(
+    # Data is filled from request automatically
+    form = forms.RecipeEdit(csrf_enabled=config.CSRF_ENABLED)
+    if request.method == 'POST':
+        if form.validate():
+            form.save_recipe(user_recipe)
+            return redirect(url_for(
+                'recipes.recipe', username=username, recipe_slug=recipe_slug))
+        else:
+            return (render_template(
+                'recipe_edit.html', user=user, recipe=user_recipe, form=form),
+                422)
+    else:
+        return render_template(
             'recipe_edit.html', user=user, recipe=user_recipe, form=form)
 
 

@@ -36,7 +36,7 @@ def load_gourmet(gourmet_file):
         description = ''
 
         ingredient_list = recipe_elem.find('ingredient-list')
-        ungrouped_ingredients = [
+        general_ingredients = [
                 _read_gourmet_ingredient(e)
                 for e in ingredient_list
                 if e.tag == 'ingredient']
@@ -63,7 +63,7 @@ def load_gourmet(gourmet_file):
                 description='',
                 instructions=instructions,
                 date_added=datetime.datetime.utcnow(),
-                ungrouped_ingredients=ungrouped_ingredients,
+                general_ingredients=general_ingredients,
                 ingredient_groups=ingredient_groups,
                 photo=image_name)
         yield recipe

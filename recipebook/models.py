@@ -94,7 +94,7 @@ class Recipe(Document):
     instructions = StringField()
     user = ReferenceField(User, dbref=True, required=True)
     tags = ListField(StringField())
-    ungrouped_ingredients = ListField(EmbeddedDocumentField(Ingredient))
+    general_ingredients = ListField(EmbeddedDocumentField(Ingredient))
     ingredient_groups = ListField(EmbeddedDocumentField(IngredientGroup))
     date_added = DateTimeField(required=True)
 
@@ -113,11 +113,11 @@ class Recipe(Document):
                 self.title_slug = slugify(data[key])
             elif key == 'user':
                 self.user = User.objects.get(username=data[key])
-            elif key == 'ungrouped_ingredients':
-                self.ungrouped_ingredients = []
+            elif key == 'general_ingredients':
+                self.general_ingredients = []
                 for item in data[key]:
                     ingredient = Ingredient.from_json(item)
-                    self.ungrouped_ingredients.append(ingredient)
+                    self.general_ingredients.append(ingredient)
             elif key == 'ingredient_groups':
                 self.ingredient_groups = []
                 for group in data[key]:
@@ -142,9 +142,9 @@ def create_recipe(title, username, ingredients, description):
             for k, v in ingredients.items()]
     # Ungrouped ingredients are in a group with no name,
     # so remove them and put them in their own list
-    ungrouped_ingredients = ingredient_groups['']
+    general_ingredients = ingredient_groups['']
     del(ingredient_groups[''])
-    recipe.ungrouped_ingredients = ungrouped_ingredients
+    recipe.general_ingredients = general_ingredients
     recipe.ingredient_groups = ingredient_groups
     recipe.date_added = datetime.datetime.utcnow()
     return recipe

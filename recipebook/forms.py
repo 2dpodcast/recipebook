@@ -4,7 +4,7 @@ import re
 from flask.ext import wtf
 
 from recipebook.models import User, get_user
-from recipebook import config, photos
+from recipebook import config, models, photos
 
 
 def valid_username(form, field):
@@ -14,9 +14,9 @@ def valid_username(form, field):
 
 
 def valid_photo(form, field):
-    if field.file.filename == '':
+    if not field.data:
         return
-    if not photos.verify(field.file):
+    if not photos.verify(field.data.stream):
         raise wtf.ValidationError("Photo is not a recognised image type")
 
 
@@ -91,31 +91,107 @@ class Register(wtf.Form):
         return True
 
 
+RECIPE_MIN_INGREDIENTS = 1
+RECIPE_MAX_INGREDIENTS = 100
+RECIPE_MIN_GROUPS = 0
+RECIPE_MAX_GROUPS = 20
+
+
 class IngredientForm(wtf.Form):
-    amount = wtf.DecimalField(
-            "Amount", validators=[wtf.validators.Required(
-                message="Ingredient amounts must be specified")])
+    amount = wtf.DecimalField("Amount", validators=[wtf.validators.Optional()])
     measure = wtf.TextField("Measure")
     ingredient = wtf.TextField(
             "Ingredient", validators=[wtf.validators.Required(
-                message="Ingredient names must be specified")])
+                message="Ingredient name is required")])
+
+    def __init__(self, *args, **kwargs):
+        # These subforms don't need csrf verification as they're only
+        # used within the RecipeEdit form.
+        kwargs['csrf_enabled'] = False
+        super(IngredientForm, self).__init__(*args, **kwargs)
 
 
 class IngredientGroup(wtf.Form):
-    title = wtf.TextField("Group title")
+    title = wtf.TextField("Group title", validators=[wtf.validators.Required(
+            message="Ingredient group title is required")])
     ingredients = wtf.FieldList(
-            wtf.FormField(IngredientForm), min_entries=3, max_entries=200)
+            wtf.FormField(IngredientForm),
+            min_entries=RECIPE_MIN_INGREDIENTS,
+            max_entries=RECIPE_MAX_INGREDIENTS)
+
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(IngredientGroup, self).__init__(*args, **kwargs)
+
 
 
 class RecipeEdit(wtf.Form):
-    MIN_INGREDIENTS = 3
-    MIN_GROUPS = 2
+    MIN_INGREDIENTS = RECIPE_MIN_INGREDIENTS
+    MIN_GROUPS = RECIPE_MIN_GROUPS
+
+    title = wtf.TextAreaField('Title')
     description = wtf.TextAreaField('Description')
-    photo = wtf.FileField('Photo', validators=[valid_photo])
-    general_ingredients = wtf.FormField(IngredientGroup)
+    instructions = wtf.TextAreaField('Instructions')
+    photo = wtf.FileField('Photo') #, validators=[valid_photo])
+    general_ingredients = wtf.FieldList(
+            wtf.FormField(IngredientForm),
+            min_entries=RECIPE_MIN_INGREDIENTS,
+            max_entries=RECIPE_MAX_INGREDIENTS)
     ingredient_groups = wtf.FieldList(
             wtf.FormField(IngredientGroup),
-            min_entries=MIN_GROUPS, max_entries=20)
+            min_entries=RECIPE_MIN_GROUPS,
+            max_entries=RECIPE_MAX_GROUPS)
 
     def save_recipe(self, recipe):
-        recipe.photo = photos.save(self.photo.file)
+        """
+        Update a recipe from the form data
+        """
+
+        if self.photo.data:
+            recipe.photo = photos.save(self.photo.data.stream)
+
+        recipe.title = self.title.data
+        recipe.description = self.description.data
+        recipe.instructions = self.instructions.data
+        recipe.general_ingredients = [
+            self.parse_ingredient(i)
+            for i in self.general_ingredients.data]
+        recipe.ingredient_groups = [
+            self.parse_ingredient_group(g)
+            for g in self.ingredient_groups.data]
+
+        recipe.save()
+
+    @staticmethod
+    def parse_ingredient(ingredient_form):
+        """
+        Convert an ingredient from the form to an ingredient model
+        """
+
+        ingredient = models.Ingredient()
+        # Set attributes to none rather than empty strings if not present
+        if not ingredient_form['amount']:
+            ingredient.amount = None
+        else:
+            ingredient.amount = float(ingredient_form['amount'])
+
+        if not ingredient_form['measure']:
+            ingredient.measure = None
+        else:
+            ingredient.measure = ingredient_form['measure']
+
+        ingredient.name = ingredient_form['ingredient']
+        return ingredient
+
+    @classmethod
+    def parse_ingredient_group(cls, ingredient_group_form):
+        """
+        Convert an ingredient group from the form to an ingredient group model
+        """
+
+        ingredient_group = models.IngredientGroup()
+        ingredient_group.title = ingredient_group_form['title']
+        ingredient_group.ingredients = [
+                cls.parse_ingredient(i)
+                for i in ingredient_group_form['ingredients']]
+        return ingredient_group

@@ -19,7 +19,7 @@ RecipeBook - {{ recipe.title }}
 <p><img src="{{ recipe.show_photo(250,180) }}" width="250" height="180" /></p>
 {% endif %}
 
-{% if recipe.description %}<p> {{recipe.description }}</p>{% endif %}
+{% if recipe.description %}<p>{{recipe.description }}</p>{% endif %}
 
 <h2>Ingredients</h2>
 
@@ -32,9 +32,9 @@ RecipeBook - {{ recipe.title }}
 </ul>
 {% endfor %}
 
-{% if recipe.ungrouped_ingredients %}
+{% if recipe.general_ingredients %}
 <ul>
-{% for ingredient in recipe.ungrouped_ingredients %}
+{% for ingredient in recipe.general_ingredients %}
 <li>{{ ingredient|safe }}</li>
 {% endfor %}
 </ul>

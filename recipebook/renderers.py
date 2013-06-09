@@ -2,6 +2,7 @@
 Module used for rendering models before passing to templates
 """
 
+from flask import escape
 import markdown2
 
 from recipebook.models import Recipe
@@ -20,20 +21,21 @@ class RecipeView(object):
         self.title_slug = recipe.title_slug
         self.user = recipe.user
         self.photo = recipe.photo
+        self.description = recipe.description
 
         self.ingredient_groups = [
                 IngredientGroupView(group)
                 for group in recipe.ingredient_groups]
 
-        self.ungrouped_ingredients = [
+        self.general_ingredients = [
                 render_ingredient(ingredient) for
-                ingredient in recipe.ungrouped_ingredients]
+                ingredient in recipe.general_ingredients]
 
     def show_photo(self, width, height):
         return photos.url(self.recipe.photo, width, height)
 
     def html_instructions(self):
-        return markdown2.markdown(self.recipe.instructions)
+        return markdown2.markdown(escape(self.recipe.instructions))
 
 
 class IngredientGroupView(object):
@@ -58,8 +60,14 @@ def render_ingredient(ingredient):
     else:
         amount = None
 
+    if ingredient.measure:
+        measure = escape(ingredient.measure)
+    else:
+        measure = None
+
+    name = escape(ingredient.name)
     return " ".join(
-            s for s in (amount, ingredient.measure, ingredient.name) if s)
+            s for s in (amount, measure, name) if s)
 
 
 def render_amount(value):
