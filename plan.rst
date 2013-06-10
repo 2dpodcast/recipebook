@@ -5,7 +5,13 @@ url: /
 
 List of most recent recipes with description, user name, photo.
 
-If following users, shows their actions first
+Tag cloud/categories.
+
+Search.
+
+Pagination.
+
+If following users, shows their actions first.
 
 User page
 ---------
@@ -14,14 +20,14 @@ url: /username
 
 List of users recipes.
 
+If this is logged in user, new recipe or upload recipe.
+
 Account admin page
 ------------------
 
 url: /account
 
-New recipe
-
-Upload recipe
+Change display name, password.
 
 Recipe page
 -----------
@@ -33,6 +39,8 @@ Shows one photo, description, ingredients, instructions.
 Ingredients can be grouped.
 
 Fork button if logged in
+
+Allow exporting from here.
 
 Editing/Adding Recipes
 ----------------------
