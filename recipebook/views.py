@@ -10,7 +10,6 @@ from recipebook import config, forms, models, photos, renderers
 
 
 recipes = Blueprint('recipes', __name__)
-errors = Blueprint('errors', __name__)
 
 
 @recipes.before_app_request

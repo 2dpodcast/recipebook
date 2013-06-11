@@ -23,11 +23,11 @@ def valid_photo(form, field):
 
 class Login(Form):
     login = wtf.TextField(
-            'Username or Email',
+            "Username or Email",
             validators=[wtf.validators.Required(
                 message="No user name or email entered")])
     password = wtf.PasswordField(
-            'Password',
+            "Password",
             validators=[wtf.validators.Required(
                 message="No password entered")])
 
@@ -43,11 +43,11 @@ class Login(Form):
 
         user = get_user(self.login.data)
         if user is None:
-            self.login.errors.append('Unknown user name or email address')
+            self.login.errors.append("Unknown user name or email address")
             return False
 
         if not user.check_password(self.password.data):
-            self.password.errors.append('Invalid password')
+            self.password.errors.append("Invalid password")
             return False
 
         self.user = user
@@ -56,16 +56,16 @@ class Login(Form):
 
 class Register(Form):
     email = wtf.TextField(
-            'Email',
+            "Email",
             validators=[wtf.validators.Email(
                 message="Invalid email address provided")])
     username = wtf.TextField(
-            'User name',
+            "User name",
             validators=[wtf.validators.Required(
                 message="No user name provided"), valid_username])
-    realname = wtf.TextField('Real name (optional)')
+    realname = wtf.TextField("Real name (optional)")
     password = wtf.PasswordField(
-            'Password',
+            "Password",
             validators=[wtf.validators.Required(
                 message="No password provided")])
 
@@ -75,16 +75,16 @@ class Register(Form):
             return False
 
         if self.username.data in config.DISABLED_USERNAMES:
-            self.username.errors.append('Sorry, this user name is not allowed')
+            self.username.errors.append("Sorry, this user name is not allowed")
             return False
 
         user = User.objects(username=self.username.data).first()
-        if user is not None:
-            self.username.errors.append('This user name is already taken')
+        if user:
+            self.username.errors.append("This user name is already taken")
             return False
 
         user = User.objects(email=self.email.data).first()
-        if user is not None:
+        if user:
             self.username.errors.append("A user with that email address "
                     "is already registered")
             return False
@@ -200,10 +200,10 @@ class RecipeEdit(Form):
     MIN_INGREDIENTS = RECIPE_MIN_INGREDIENTS
     MIN_GROUPS = RECIPE_MIN_GROUPS
 
-    title = wtf.TextAreaField('Title')
-    description = wtf.TextAreaField('Description')
-    instructions = wtf.TextAreaField('Instructions')
-    photo = wtf.FileField('Photo') #, validators=[valid_photo])
+    title = wtf.TextAreaField("Title")
+    description = wtf.TextAreaField("Description")
+    instructions = wtf.TextAreaField("Instructions")
+    photo = wtf.FileField("Photo") #, validators=[valid_photo])
     general_ingredients = wtf.FieldList(
             wtf.FormField(IngredientForm),
             min_entries=RECIPE_MIN_INGREDIENTS,

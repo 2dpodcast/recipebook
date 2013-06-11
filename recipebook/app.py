@@ -20,7 +20,6 @@ def create_app(config, testing=False):
     from recipebook import views
     app.register_blueprint(admin.admin, url_prefix='/administer')
     app.register_blueprint(views.recipes)
-    app.register_blueprint(views.errors)
 
     for eh in views.error_handlers:
         app.register_error_handler(eh[0], eh[1])
