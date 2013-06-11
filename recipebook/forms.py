@@ -107,20 +107,52 @@ class IngredientForm(Form):
 
     def __init__(self, *args, **kwargs):
         # These subforms don't need csrf verification as they're only
-        # used within the RecipeEdit form.
+        # used within the RecipeEdit form, and we need to create new
+        # ones programatically so don't want to have to add the csrf token.
         kwargs['csrf_enabled'] = False
         super(IngredientForm, self).__init__(*args, **kwargs)
 
     @staticmethod
-    def vals_from_recipe_ingredient(ingredient):
-        vals = {}
-        if ingredient.amount:
-            vals['amount'] = ingredient.amount
-        if ingredient.measure:
-            vals['measure'] = ingredient.measure
-        if ingredient.item:
-            vals['item'] = ingredient.item
-        return vals
+    def from_model(ingredient):
+        """
+        Convert ingredient model to dictionary of values used
+        for filling out form data
+        """
+
+        # Only include values that are actually set, otherwise
+        # wtforms will not be happy with None values
+        return {
+                k: v
+                for k, v in [
+                    ('amount', ingredient.amount),
+                    ('measure', ingredient.measure),
+                    ('item', ingredient.item)]
+                if v
+                }
+
+    @staticmethod
+    def to_model(ingredient_form):
+        """
+        Convert an ingredient from the form data to an ingredient model
+        """
+
+        # This isn't a method as we don't have access to the actual
+        # object but to the form data as a dictionary
+
+        ingredient = models.Ingredient()
+        # Set attributes to none rather than empty strings if not present
+        if not ingredient_form['amount']:
+            ingredient.amount = None
+        else:
+            ingredient.amount = float(ingredient_form['amount'])
+
+        if not ingredient_form['measure']:
+            ingredient.measure = None
+        else:
+            ingredient.measure = ingredient_form['measure']
+
+        ingredient.item = ingredient_form['item']
+        return ingredient
 
 
 class IngredientGroup(Form):
@@ -135,6 +167,33 @@ class IngredientGroup(Form):
         kwargs['csrf_enabled'] = False
         super(IngredientGroup, self).__init__(*args, **kwargs)
 
+    @staticmethod
+    def from_model(ingredient_group):
+        """
+        Convert ingredient group model to dictionary of
+        values used for filling out form data
+        """
+
+        return {
+                'title': ingredient_group.title,
+                'ingredients': [
+                    Ingredient.from_model(i)
+                    for i in ingredient_group.ingredients],
+                }
+
+    @staticmethod
+    def to_model(ingredient_group_form):
+        """
+        Convert an ingredient group from the form data
+        to an ingredient group model
+        """
+
+        ingredient_group = models.IngredientGroup()
+        ingredient_group.title = ingredient_group_form['title']
+        ingredient_group.ingredients = [
+                Ingredient.to_model(i)
+                for i in ingredient_group_form['ingredients']]
+        return ingredient_group
 
 
 class RecipeEdit(Form):
@@ -161,8 +220,11 @@ class RecipeEdit(Form):
         kwargs['description'] = recipe.description
         kwargs['instructions'] = recipe.instructions
         kwargs['general_ingredients'] = [
-                IngredientForm.vals_from_recipe_ingredient(i)
+                IngredientForm.from_model(i)
                 for i in recipe.general_ingredients]
+        kwargs['ingredient_groups'] = [
+                IngredientGroupForm.from_model(g)
+                for g in recipe.ingredient_groups]
         return cls(*args, **kwargs)
 
     def save_recipe(self, recipe):
@@ -177,44 +239,10 @@ class RecipeEdit(Form):
         recipe.description = self.description.data
         recipe.instructions = self.instructions.data
         recipe.general_ingredients = [
-            self.parse_ingredient(i)
+            IngredientForm.to_model(i)
             for i in self.general_ingredients.data]
         recipe.ingredient_groups = [
-            self.parse_ingredient_group(g)
+            IngredientGroupForm.to_model(g)
             for g in self.ingredient_groups.data]
 
         recipe.save()
-
-    @staticmethod
-    def parse_ingredient(ingredient_form):
-        """
-        Convert an ingredient from the form to an ingredient model
-        """
-
-        ingredient = models.Ingredient()
-        # Set attributes to none rather than empty strings if not present
-        if not ingredient_form['amount']:
-            ingredient.amount = None
-        else:
-            ingredient.amount = float(ingredient_form['amount'])
-
-        if not ingredient_form['measure']:
-            ingredient.measure = None
-        else:
-            ingredient.measure = ingredient_form['measure']
-
-        ingredient.item = ingredient_form['item']
-        return ingredient
-
-    @classmethod
-    def parse_ingredient_group(cls, ingredient_group_form):
-        """
-        Convert an ingredient group from the form to an ingredient group model
-        """
-
-        ingredient_group = models.IngredientGroup()
-        ingredient_group.title = ingredient_group_form['title']
-        ingredient_group.ingredients = [
-                cls.parse_ingredient(i)
-                for i in ingredient_group_form['ingredients']]
-        return ingredient_group
