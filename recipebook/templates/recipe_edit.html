@@ -145,7 +145,7 @@ function renumberIngredients(tbody, groupId) {
     <td>{{ ingredient.amount() }}</td>
     <td>{{ ingredient.measure() }}</td>
     <td>{{ ingredient.ingredient() }}</td>
-    <td>{% if index > form.MIN_INGREDIENTS %}
+    <td>{% if (index + 1) > form.MIN_INGREDIENTS %}
         <a href="#remove_ingredient"
             onClick="removeIngredient('general_ingredients', {{ index }});">
             Remove ingredient</a>
@@ -192,7 +192,7 @@ function renumberIngredients(tbody, groupId) {
     <tbody>
         <tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>
         {% for ingredient in form.general_ingredients.entries %}
-            {{ ingredient_row(ingredient, loop.index) }}
+            {{ ingredient_row(ingredient, (loop.index - 1)) }}
         {% endfor %}
     </tbody>
     </table>
@@ -203,7 +203,7 @@ function renumberIngredients(tbody, groupId) {
 
     <div id="ingredient_groups">
     {% for ingredient_group in form.ingredient_groups.entries %}
-        {% set group_id = "ingredient_groups-%d" % loop.index %}
+        {% set group_id = "ingredient_groups-%d" % (loop.index - 1) %}
         <fieldset id="{{ group_id }}">
         {{ ingredient_group.title.label }}
         {{ ingredient_group.title() }}
@@ -211,7 +211,7 @@ function renumberIngredients(tbody, groupId) {
         <tbody>
             <tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>
             {% for ingredient in ingredient_group.ingredients.entries %}
-                {{ ingredient_row(ingredient, loop.index) }}
+                {{ ingredient_row(ingredient, (loop.index - 1)) }}
             {% endfor %}
         </tbody>
         </table>
