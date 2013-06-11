@@ -37,7 +37,7 @@ class RecipebookTestCase(unittest.TestCase):
         test_email = 'test_invalid@test.com'
         rv = self.app.post('/register', data={
                 'email': test_email,
-                'username': config.DISABLED_USERNAMES[1],
+                'username': 'account',
                 'realname': 'Tester',
                 'password': '12345'},
             follow_redirects=True)
@@ -53,15 +53,15 @@ class RecipebookTestCase(unittest.TestCase):
     def test_add_recipe(self):
         self.add_users()
         ingredients = {'': [
-            models.Ingredient(name='Mince', amount=500.0, measure='g'),
-            models.Ingredient(name='Spaghetti', amount=200.0, measure='g'),
+            models.Ingredient(item='Mince', amount=500.0, measure='g'),
+            models.Ingredient(item='Spaghetti', amount=200.0, measure='g'),
         ]}
         recipe = models.create_recipe(
                 'Test Recipe', 'admin', ingredients, 'A new test recipe')
         recipe.save()
         assert(models.Recipe.objects.first().title == 'Test Recipe')
-        assert(models.Recipe.objects.first().ingredient_groups[0].
-                ingredients[0].name == 'Mince')
+        assert(models.Recipe.objects.first().
+                general_ingredients[0].item == 'Mince')
 
 
 if __name__ == '__main__':

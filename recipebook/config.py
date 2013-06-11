@@ -14,7 +14,8 @@ CSRF_ENABLED = True
 
 # Prevent url clashes with usernames
 DISABLED_USERNAMES = [
-    'login', 'register', 'static', 'account', 'new', 'search', 'p']
+    'login', 'register', 'account', 'new', 'search',
+    'static', 'p', 'administer']
 
 NUMBER_HOME_RECIPES = 10
 

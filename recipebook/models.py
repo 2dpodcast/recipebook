@@ -137,15 +137,15 @@ def create_recipe(title, username, ingredients, description):
     recipe = Recipe(title=title, description=description)
     recipe.user = User.objects.with_id(username)
     recipe.title_slug = slugify(title)
-    ingredient_groups = [
-            IngredientGroup(group=k, ingredients=v)
-            for k, v in ingredients.items()]
+    ingredient_groups = {
+            k: IngredientGroup(group=k, ingredients=v)
+            for k, v in ingredients.items()}
     # Ungrouped ingredients are in a group with no name,
     # so remove them and put them in their own list
-    general_ingredients = ingredient_groups['']
+    general_ingredients = ingredient_groups[''].ingredients
     del(ingredient_groups[''])
     recipe.general_ingredients = general_ingredients
-    recipe.ingredient_groups = ingredient_groups
+    recipe.ingredient_groups = ingredient_groups.values()
     recipe.date_added = datetime.datetime.utcnow()
     return recipe
 
