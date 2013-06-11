@@ -101,7 +101,7 @@ RECIPE_MAX_GROUPS = 20
 class IngredientForm(Form):
     amount = wtf.DecimalField("Amount", validators=[wtf.validators.Optional()])
     measure = wtf.TextField("Measure")
-    ingredient = wtf.TextField(
+    item = wtf.TextField(
             "Ingredient", validators=[wtf.validators.Required(
                 message="Ingredient name is required")])
 
@@ -118,8 +118,8 @@ class IngredientForm(Form):
             vals['amount'] = ingredient.amount
         if ingredient.measure:
             vals['measure'] = ingredient.measure
-        if ingredient.name:
-            vals['ingredient'] = ingredient.name
+        if ingredient.item:
+            vals['item'] = ingredient.item
         return vals
 
 
@@ -203,7 +203,7 @@ class RecipeEdit(Form):
         else:
             ingredient.measure = ingredient_form['measure']
 
-        ingredient.name = ingredient_form['ingredient']
+        ingredient.item = ingredient_form['item']
         return ingredient
 
     @classmethod

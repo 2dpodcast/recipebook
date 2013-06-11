@@ -71,12 +71,12 @@ def load_gourmet(gourmet_file):
 
 def _read_gourmet_ingredient(elem):
     items = {n.tag: n.text.strip() for n in elem}
-    name = items['item']
+    item = items['item']
     measure = items.get('unit', None)
     amount = items.get('amount', None)
     if amount is not None:
         amount = float(amount)
-    return Ingredient(name=name, amount=amount, measure=measure)
+    return Ingredient(item=item, amount=amount, measure=measure)
 
 
 def _read_gourmet_ingredient_group(elem):

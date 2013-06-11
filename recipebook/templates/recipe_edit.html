@@ -22,7 +22,7 @@ function ingredientName(groupId, index) {
     return groupId + '-ingredients-' + index;
 }
 
-var ingredientProperties = ["amount", "measure", "ingredient"];
+var ingredientProperties = ["amount", "measure", "item"];
 
 function addIngredient(groupId, removable) {
     var tbody = document.getElementById(
@@ -150,14 +150,14 @@ function renumberIngredients(tbody, groupId) {
 <tr>
     <td>{{ ingredient.amount() }}</td>
     <td>{{ ingredient.measure() }}</td>
-    <td>{{ ingredient.ingredient() }}</td>
+    <td>{{ ingredient.item() }}</td>
     <td>{% if (index + 1) > form.MIN_INGREDIENTS %}
         <a href="#remove_ingredient"
             onClick="removeIngredient('general_ingredients', {{ index }});">
             Remove ingredient</a>
     {% endif %}</td>
 </tr>
-{% if ingredient.amount.errors or ingredient.measure.errors or ingredient.ingredient.errors %}
+{% if ingredient.amount.errors or ingredient.measure.errors or ingredient.item.errors %}
 <tr class="errors">
     <td>
         {% for error in ingredient.amount.errors %}{{ error|e }}{% endfor %}
@@ -166,7 +166,7 @@ function renumberIngredients(tbody, groupId) {
         {% for error in ingredient.measure.errors %}{{ error|e }}{% endfor %}
     </td>
     <td>
-        {% for error in ingredient.ingredient.errors %}{{ error|e }}{% endfor %}
+        {% for error in ingredient.item.errors %}{{ error|e }}{% endfor %}
     </td>
 </tr>
 {% endif %}

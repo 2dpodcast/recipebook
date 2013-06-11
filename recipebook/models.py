@@ -58,14 +58,14 @@ def get_user(login_name):
 
 
 class Ingredient(EmbeddedDocument):
-    name = StringField(required=True)
+    item = StringField(required=True)
     amount = FloatField()
     measure = StringField()
 
     @classmethod
     def from_json(cls, data):
         return cls(
-                name=data['name'],
+                item=data['item'],
                 amount=data['amount'],
                 measure=data['measure'])
 

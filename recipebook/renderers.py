@@ -65,9 +65,9 @@ def render_ingredient(ingredient):
     else:
         measure = None
 
-    name = escape(ingredient.name)
+    item = escape(ingredient.item)
     return " ".join(
-            s for s in (amount, measure, name) if s)
+            s for s in (amount, measure, item) if s)
 
 
 def render_amount(value):
