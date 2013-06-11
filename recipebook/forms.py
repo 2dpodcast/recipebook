@@ -1,7 +1,8 @@
 import os
 import re
 
-from flask.ext import wtf
+from flask.ext.wtf import Form
+import wtforms as wtf
 
 from recipebook.models import User, get_user
 from recipebook import config, models, photos
@@ -20,7 +21,7 @@ def valid_photo(form, field):
         raise wtf.ValidationError("Photo is not a recognised image type")
 
 
-class Login(wtf.Form):
+class Login(Form):
     login = wtf.TextField(
             'Username or Email',
             validators=[wtf.validators.Required(
@@ -31,12 +32,12 @@ class Login(wtf.Form):
                 message="No password entered")])
 
     def __init__(self, *args, **kwargs):
-        wtf.Form.__init__(self, *args, **kwargs)
+        Form.__init__(self, *args, **kwargs)
         self.user = None
 
     def validate(self):
         # Regular validation
-        rv = wtf.Form.validate(self)
+        rv = Form.validate(self)
         if not rv:
             return False
 
@@ -53,7 +54,7 @@ class Login(wtf.Form):
         return True
 
 
-class Register(wtf.Form):
+class Register(Form):
     email = wtf.TextField(
             'Email',
             validators=[wtf.validators.Email(
@@ -69,7 +70,7 @@ class Register(wtf.Form):
                 message="No password provided")])
 
     def validate(self):
-        rv = wtf.Form.validate(self)
+        rv = Form.validate(self)
         if not rv:
             return False
 
@@ -97,7 +98,7 @@ RECIPE_MIN_GROUPS = 0
 RECIPE_MAX_GROUPS = 20
 
 
-class IngredientForm(wtf.Form):
+class IngredientForm(Form):
     amount = wtf.DecimalField("Amount", validators=[wtf.validators.Optional()])
     measure = wtf.TextField("Measure")
     ingredient = wtf.TextField(
@@ -110,8 +111,19 @@ class IngredientForm(wtf.Form):
         kwargs['csrf_enabled'] = False
         super(IngredientForm, self).__init__(*args, **kwargs)
 
+    @staticmethod
+    def vals_from_recipe_ingredient(ingredient):
+        vals = {}
+        if ingredient.amount:
+            vals['amount'] = ingredient.amount
+        if ingredient.measure:
+            vals['measure'] = ingredient.measure
+        if ingredient.name:
+            vals['ingredient'] = ingredient.name
+        return vals
 
-class IngredientGroup(wtf.Form):
+
+class IngredientGroup(Form):
     title = wtf.TextField("Group title", validators=[wtf.validators.Required(
             message="Ingredient group title is required")])
     ingredients = wtf.FieldList(
@@ -125,7 +137,7 @@ class IngredientGroup(wtf.Form):
 
 
 
-class RecipeEdit(wtf.Form):
+class RecipeEdit(Form):
     MIN_INGREDIENTS = RECIPE_MIN_INGREDIENTS
     MIN_GROUPS = RECIPE_MIN_GROUPS
 
@@ -141,6 +153,17 @@ class RecipeEdit(wtf.Form):
             wtf.FormField(IngredientGroup),
             min_entries=RECIPE_MIN_GROUPS,
             max_entries=RECIPE_MAX_GROUPS)
+
+    @classmethod
+    def from_recipe(cls, recipe, *args, **orig_kwargs):
+        kwargs = dict(orig_kwargs)
+        kwargs['title'] = recipe.title
+        kwargs['description'] = recipe.description
+        kwargs['instructions'] = recipe.instructions
+        kwargs['general_ingredients'] = [
+                IngredientForm.vals_from_recipe_ingredient(i)
+                for i in recipe.general_ingredients]
+        return cls(*args, **kwargs)
 
     def save_recipe(self, recipe):
         """

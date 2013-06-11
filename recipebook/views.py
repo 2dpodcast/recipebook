@@ -113,8 +113,12 @@ def edit_recipe(username, recipe_slug):
                 user=user, title_slug=recipe_slug).get()
     except DoesNotExist:
         abort(404)
-    # Data is filled from request automatically
-    form = forms.RecipeEdit(csrf_enabled=config.CSRF_ENABLED)
+    # The form is recreated for each request, the first time with
+    # just the data from the existing recipe, the second time from
+    # the posted data in the request. The post data will take
+    # precedence over the keyword arguments
+    form = forms.RecipeEdit.from_recipe(
+            user_recipe, csrf_enabled=config.CSRF_ENABLED)
     if request.method == 'POST':
         if form.validate():
             form.save_recipe(user_recipe)
@@ -126,7 +130,26 @@ def edit_recipe(username, recipe_slug):
                 422)
     else:
         return render_template(
-            'recipe_edit.html', user=user, recipe=user_recipe, form=form)
+            'recipe_edit.html', recipe=user_recipe, form=form)
+
+
+@recipes.route('/new', methods=('GET', 'POST'))
+def new_recipe():
+    if not g.user:
+        abort(401)
+    form = forms.RecipeEdit(csrf_enabled=config.CSRF_ENABLED)
+    if request.method == 'POST':
+        if form.validate():
+            user_recipe = models.Recipe(user=g.user)
+            form.save_recipe(user_recipe)
+            return redirect(url_for(
+                'recipes.recipe', username=g.user.username,
+                recipe_slug=user_recipe.recipe_slug))
+        else:
+            return (render_template(
+                'recipe_edit.html', form=form, recipe=None), 422)
+    else:
+        return render_template('recipe_edit.html', form=form, recipe=None)
 
 
 def not_found(error):
