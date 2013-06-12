@@ -94,12 +94,20 @@ class RecipebookTestCase(unittest.TestCase):
         assert rv.status_code == 200
 
     def test_load_json(self):
+        """
+        Test loading a recipe from JSON data
+        """
+
         # Recipes are always loaded in setup
         recipe = models.Recipe.objects(title_slug='example-recipe').first()
         assert(recipe.ingredient_groups[0].ingredients[0].item ==
                 'An ingredient')
 
     def test_access_edit_form(self):
+        """
+        Test user access to editing a recipe
+        """
+
         rv = self.client.get('/admin/example-recipe/edit')
         assert rv.status_code == 401
 
@@ -109,8 +117,19 @@ class RecipebookTestCase(unittest.TestCase):
         rv = self.logout()
 
     def test_setup_edit_form(self):
+        """
+        Check recipe data is entered into editing form
+        """
+
         rv = self.login('admin')
         rv = self.client.get('/admin/example-recipe/edit')
+        title_input = ('<textarea id="title" name="title">'
+                'Example Recipe</textarea>')
+        ingredient_input = 'value="An ingredient"'
+        ingredient_input_2 = 'value="cups"'
+        assert title_input in rv.data
+        assert ingredient_input in rv.data
+        assert ingredient_input_2 in rv.data
 
 
 if __name__ == '__main__':
