@@ -4,7 +4,7 @@
 MONGODB_HOST = 'localhost'
 MONGODB_PORT = 27017
 DATABASE = 'recipebook'
-TEST_DATABASE = 'recipebook'
+TEST_DATABASE = 'recipebook_test'
 
 SECRET_KEY = '12345'
 DEBUG = True
