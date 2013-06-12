@@ -38,10 +38,13 @@ def index():
 @recipes.route('/login', methods=('GET', 'POST'))
 def login():
     form = forms.Login(csrf_enabled=config.CSRF_ENABLED)
-    if request.method == 'POST' and form.validate():
-        flash(u'Successfully logged in as %s' % form.user.username)
-        session['user_id'] = form.user.username
-        return redirect(url_for('recipes.index'))
+    if request.method == 'POST':
+        if form.validate():
+            flash(u'Successfully logged in as %s' % form.user.username)
+            session['user_id'] = form.user.username
+            return redirect(url_for('recipes.index'))
+        else:
+            return render_template('login.html', form=form), 422
     return render_template('login.html', form=form)
 
 
