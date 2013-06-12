@@ -97,6 +97,7 @@ class Recipe(Document):
     general_ingredients = ListField(EmbeddedDocumentField(Ingredient))
     ingredient_groups = ListField(EmbeddedDocumentField(IngredientGroup))
     date_added = DateTimeField(required=True)
+    date_modified = DateTimeField(required=True)
 
     meta = {
             'collection': 'recipes',
@@ -126,28 +127,11 @@ class Recipe(Document):
             else:
                 self.__setattr__(key, data[key])
 
-
-def create_recipe(title, username, ingredients, description):
-    """Create a new recipe
-
-    ingredients is a dict with ingredient group names as keys
-    and lists of ingredients for values
-    """
-
-    recipe = Recipe(title=title, description=description)
-    recipe.user = User.objects.with_id(username)
-    recipe.title_slug = slugify(title)
-    ingredient_groups = {
-            k: IngredientGroup(group=k, ingredients=v)
-            for k, v in ingredients.items()}
-    # Ungrouped ingredients are in a group with no name,
-    # so remove them and put them in their own list
-    general_ingredients = ingredient_groups[''].ingredients
-    del(ingredient_groups[''])
-    recipe.general_ingredients = general_ingredients
-    recipe.ingredient_groups = ingredient_groups.values()
-    recipe.date_added = datetime.datetime.utcnow()
-    return recipe
+    def save(self):
+        self.date_modified = datetime.datetime.utcnow()
+        if not self.date_added:
+            self.date_added = self.date_modified
+        super(Recipe, self).save()
 
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')

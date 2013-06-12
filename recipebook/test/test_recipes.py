@@ -7,6 +7,7 @@ from mongoengine.queryset import DoesNotExist
 
 from recipebook import models, config
 from recipebook import app as recipeapp
+from recipebook.test.example_recipes import recipes as json_recipes
 
 
 class RecipebookTestCase(unittest.TestCase):
@@ -33,6 +34,12 @@ class RecipebookTestCase(unittest.TestCase):
         admin_user.save()
         test_user.save()
 
+    def load_recipes(self):
+        for data in json_recipes:
+            recipe = models.Recipe()
+            recipe.load_json(data)
+            recipe.save()
+
     def test_invalid_user(self):
         test_email = 'test_invalid@test.com'
         rv = self.app.post('/register', data={
@@ -50,18 +57,13 @@ class RecipebookTestCase(unittest.TestCase):
         admin_user = models.User.objects.with_id('admin')
         test_user = models.User.objects.with_id('tester')
 
-    def test_add_recipe(self):
+    def test_load_json(self):
         self.add_users()
-        ingredients = {'': [
-            models.Ingredient(item='Mince', amount=500.0, measure='g'),
-            models.Ingredient(item='Spaghetti', amount=200.0, measure='g'),
-        ]}
-        recipe = models.create_recipe(
-                'Test Recipe', 'admin', ingredients, 'A new test recipe')
-        recipe.save()
-        assert(models.Recipe.objects.first().title == 'Test Recipe')
-        assert(models.Recipe.objects.first().
-                general_ingredients[0].item == 'Mince')
+        self.load_recipes()
+
+        recipe = models.Recipe.objects(title_slug='example-recipe').first()
+        assert(recipe.ingredient_groups[0].ingredients[0].item ==
+                'An ingredient')
 
 
 if __name__ == '__main__':
