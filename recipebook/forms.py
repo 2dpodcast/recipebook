@@ -4,7 +4,7 @@ import re
 from flask.ext.wtf import Form
 import wtforms as wtf
 
-from recipebook.models import User, get_user
+from recipebook.models import User, get_user, slugify
 from recipebook import config, models, photos
 
 
@@ -197,7 +197,7 @@ class RecipeEdit(Form):
     title = wtf.TextAreaField("Title")
     description = wtf.TextAreaField("Description")
     instructions = wtf.TextAreaField("Instructions")
-    photo = wtf.FileField("Photo") #, validators=[valid_photo])
+    photo = wtf.FileField("Photo", validators=[valid_photo])
     general_ingredients = wtf.FieldList(
             wtf.FormField(IngredientForm),
             min_entries=RECIPE_MIN_INGREDIENTS,
@@ -230,6 +230,7 @@ class RecipeEdit(Form):
             recipe.photo = photos.save(self.photo.data.stream)
 
         recipe.title = self.title.data
+        recipe.title_slug = slugify(self.title.data)
         recipe.description = self.description.data
         recipe.instructions = self.instructions.data
         recipe.general_ingredients = [

@@ -146,7 +146,7 @@ def new_recipe():
             form.save_recipe(user_recipe)
             return redirect(url_for(
                 'recipes.recipe', username=g.user.username,
-                recipe_slug=user_recipe.recipe_slug))
+                recipe_slug=user_recipe.title_slug))
         else:
             return (render_template(
                 'recipe_edit.html', form=form, recipe=None), 422)

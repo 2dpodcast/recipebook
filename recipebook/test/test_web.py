@@ -20,6 +20,14 @@ test_users = {
             'tester', 'tester@nonexistent.com', 'tester', models.User.USER),
         }
 
+recipe_post_data = {
+        'title': "New Title",
+        'instructions': "New instructions",
+        'general_ingredients-0-amount': 2.0,
+        'general_ingredients-0-measure': "cups",
+        'general_ingredients-0-item': "flour",
+        }
+
 
 class RecipebookTestCase(unittest.TestCase):
     def setUp(self):
@@ -108,12 +116,20 @@ class RecipebookTestCase(unittest.TestCase):
         Test user access to editing a recipe
         """
 
+        # Not logged in, not allowed
         rv = self.client.get('/admin/example-recipe/edit')
         assert rv.status_code == 401
 
+        # Logged in as author, allowed
         rv = self.login('admin')
         rv = self.client.get('/admin/example-recipe/edit')
         assert rv.status_code == 200
+        rv = self.logout()
+
+        # Logged in as different user, not allowed
+        rv = self.login('tester')
+        rv = self.client.get('/admin/example-recipe/edit')
+        assert rv.status_code == 401
         rv = self.logout()
 
     def test_setup_edit_form(self):
@@ -130,6 +146,48 @@ class RecipebookTestCase(unittest.TestCase):
         assert title_input in rv.data
         assert ingredient_input in rv.data
         assert ingredient_input_2 in rv.data
+
+    def test_recipe_edit(self):
+        """Test editing a recipe"""
+
+        rv = self.login('admin')
+        rv = self.client.post('/admin/example-recipe/edit',
+                data=recipe_post_data)
+        recipe = models.Recipe.objects(title="New Title").first()
+        assert recipe
+        assert recipe.instructions == "New instructions"
+        assert recipe.general_ingredients[0].item == "flour"
+
+    def test_new_recipe_access(self):
+        """
+        Test new recipe creation
+        """
+
+        rv = self.client.get('/new')
+        assert rv.status_code == 401
+
+        # Also make sure posting data isn't allowed
+        rv = self.client.post('/new', data={})
+        assert rv.status_code == 401
+
+        rv = self.login('tester')
+        rv = self.client.get('/new')
+        assert rv.status_code == 200
+        rv = self.logout()
+
+    def test_new_recipe(self):
+        """
+        Test creating a new recipe
+        """
+
+        rv = self.login('tester')
+        rv = self.client.post('/new',
+                data=recipe_post_data)
+        recipe = models.Recipe.objects(title="New Title").first()
+        assert recipe
+        assert recipe.instructions == "New instructions"
+        assert recipe.general_ingredients[0].item == "flour"
+        assert recipe.user.username == "tester"
 
 
 if __name__ == '__main__':
