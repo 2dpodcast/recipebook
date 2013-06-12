@@ -130,28 +130,24 @@ class IngredientForm(Form):
                 if v
                 }
 
-    @staticmethod
-    def to_model(ingredient_form):
+    def to_model(self):
         """
         Convert an ingredient from the form data to an ingredient model
         """
 
-        # This isn't a method as we don't have access to the actual
-        # object but to the form data as a dictionary
-
         ingredient = models.Ingredient()
         # Set attributes to none rather than empty strings if not present
-        if not ingredient_form['amount']:
+        if self.amount.data:
+            ingredient.amount = float(self.amount.data)
+        else:
             ingredient.amount = None
-        else:
-            ingredient.amount = float(ingredient_form['amount'])
 
-        if not ingredient_form['measure']:
+        if self.measure.data:
+            ingredient.measure = self.measure.data
+        else:
             ingredient.measure = None
-        else:
-            ingredient.measure = ingredient_form['measure']
 
-        ingredient.item = ingredient_form['item']
+        ingredient.item = self.item.data
         return ingredient
 
 
@@ -177,22 +173,20 @@ class IngredientGroup(Form):
         return {
                 'title': ingredient_group.title,
                 'ingredients': [
-                    Ingredient.from_model(i)
+                    IngredientForm.from_model(i)
                     for i in ingredient_group.ingredients],
                 }
 
-    @staticmethod
-    def to_model(ingredient_group_form):
+    def to_model(self):
         """
         Convert an ingredient group from the form data
         to an ingredient group model
         """
 
         ingredient_group = models.IngredientGroup()
-        ingredient_group.title = ingredient_group_form['title']
+        ingredient_group.title = self.title.data
         ingredient_group.ingredients = [
-                Ingredient.to_model(i)
-                for i in ingredient_group_form['ingredients']]
+                i.to_model() for i in self.ingredients]
         return ingredient_group
 
 
@@ -223,7 +217,7 @@ class RecipeEdit(Form):
                 IngredientForm.from_model(i)
                 for i in recipe.general_ingredients]
         kwargs['ingredient_groups'] = [
-                IngredientGroupForm.from_model(g)
+                IngredientGroup.from_model(g)
                 for g in recipe.ingredient_groups]
         return cls(*args, **kwargs)
 
@@ -239,10 +233,8 @@ class RecipeEdit(Form):
         recipe.description = self.description.data
         recipe.instructions = self.instructions.data
         recipe.general_ingredients = [
-            IngredientForm.to_model(i)
-            for i in self.general_ingredients.data]
+                i.to_model() for i in self.general_ingredients]
         recipe.ingredient_groups = [
-            IngredientGroupForm.to_model(g)
-            for g in self.ingredient_groups.data]
+            g.to_model() for g in self.ingredient_groups]
 
         recipe.save()
