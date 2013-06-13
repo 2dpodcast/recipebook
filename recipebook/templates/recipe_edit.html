@@ -19,7 +19,11 @@ function groupName(index) {
 }
 
 function ingredientName(groupId, index) {
-    return groupId + '-ingredients-' + index;
+    if (groupId == 'general_ingredients') {
+        return groupId + '-' + index;
+    } else {
+        return groupId + '-ingredients-' + index;
+    }
 }
 
 var ingredientProperties = ["amount", "measure", "item"];
