@@ -239,3 +239,45 @@ class RecipeEdit(Form):
             g.to_model() for g in self.ingredient_groups]
 
         recipe.save()
+
+
+class AccountSettings(Form):
+    real_name = wtf.TextField("Real name (optional)")
+    current_password = wtf.PasswordField("Current password")
+    new_password = wtf.PasswordField("New password")
+    repeated_password = wtf.PasswordField("Repeat new Password")
+
+    def __init__(self, user, *args, **orig_kwargs):
+        self.user = user
+        kwargs = dict(orig_kwargs)
+        kwargs['real_name'] = user.real_name
+        super(AccountSettings, self).__init__(*args, **kwargs)
+
+    def validate(self):
+        valid = True
+        # Regular validation
+        rv = Form.validate(self)
+        if not rv:
+            valid = False
+
+        if self.new_password.data:
+            if not self.user.check_password(self.current_password.data):
+                self.current_password.errors.append("Incorrect password")
+                valid = False
+            if self.repeated_password.data != self.new_password.data:
+                self.repeated_password.errors.append(
+                        "Repeated password does not match")
+                valid = False
+
+        return valid
+
+    def update_user(self):
+        if self.real_name.data:
+            self.user.real_name = self.real_name.data
+        if self.new_password.data:
+            self.user.set_password(self.new_password.data)
+        self.user.save()
+
+
+class RecipeImport(Form):
+    pass

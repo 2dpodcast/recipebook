@@ -154,6 +154,41 @@ def new_recipe():
         return render_template('recipe_edit.html', form=form, recipe=None)
 
 
+@recipes.route('/import', methods=('GET', 'POST'))
+def import_recipe():
+    if not g.user:
+        abort(401)
+    form = forms.RecipeImport(csrf_enabled=config.CSRF_ENABLED)
+    if request.method == 'POST':
+        if form.validate():
+            user_recipe = models.Recipe(user=g.user)
+            form.save_recipe(user_recipe)
+            return redirect(url_for(
+                'recipes.recipe', username=g.user.username,
+                recipe_slug=user_recipe.title_slug))
+        else:
+            return (render_template(
+                'recipe_import.html', form=form, recipe=None), 422)
+    else:
+        return render_template('recipe_import.html', form=form, recipe=None)
+
+
+@recipes.route('/account', methods=('GET', 'POST'))
+def account_settings():
+    if not g.user:
+        abort(401)
+    form = forms.AccountSettings(g.user, csrf_enabled=config.CSRF_ENABLED)
+    if request.method == 'POST':
+        if form.validate():
+            form.update_user()
+            return redirect(url_for(
+                'recipes.user_recipes', username=g.user.username,))
+        else:
+            return (render_template('account_settings.html', form=form), 422)
+    else:
+        return render_template('account_settings.html', form=form)
+
+
 def not_found(error):
     return render_template('404.html'), 404
 

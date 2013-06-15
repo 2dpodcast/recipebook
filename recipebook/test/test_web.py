@@ -189,6 +189,40 @@ class RecipebookTestCase(unittest.TestCase):
         assert recipe.general_ingredients[0].item == "flour"
         assert recipe.user.username == "tester"
 
+    def test_display_name(self):
+        """
+        Test that the user's name is displayed with
+        either their username or real name
+        """
+
+        # From setup, real_name is not set
+        rv = self.client.get('/admin')
+        assert "admin's" in rv.data
+
+        rv = self.login('admin')
+        rv = self.client.post('/account', data={
+            'real_name': 'Real Name'})
+        rv = self.client.get('/admin')
+        assert "Real Name's" in rv.data
+
+    def test_password_change(self):
+        self.login('admin')
+        rv = self.client.post('/account', data={
+            'current_password': 'admin',
+            'new_password': 'new_password',
+            'repeated_password': 'new_password',
+            }, follow_redirects=True)
+        assert rv.status_code == 200
+        self.logout()
+        rv = self.client.post('/login', data={
+                'login': 'admin',
+                'password': 'new_password',
+            }, follow_redirects=True)
+        assert rv.status_code == 200
+        with self.client:
+            self.client.get('/')
+            assert flask.g.user.username == 'admin'
+
 
 if __name__ == '__main__':
     unittest.main()

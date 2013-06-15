@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import field_with_errors %}
+
+{% block title %}
+RecipeBook - Account Settings
+{% endblock title %}
+
+{% block content %}
+<h1>Account settings</h1>
+
+<form action="{{ url_for( 'recipes.account_settings' ) }}"
+    method="POST" enctype="multipart/form-data">
+
+    {{ form.csrf_token }}
+
+    <h2>Your Account</h2>
+
+    {{ field_with_errors(form.real_name) }}
+
+    <h2>Change Password</h2>
+
+    {{ field_with_errors(form.current_password) }}
+    {{ field_with_errors(form.new_password) }}
+    {{ field_with_errors(form.repeated_password) }}
+
+    <p><input type="submit" value="Save"></p>
+
+{% endblock content %}

@@ -7,6 +7,14 @@ RecipeBook - {{ user.display_name() }}'s Recipes
 {% block content %}
 <h1>{{ user.display_name() }}'s Recipes</h1>
 
+{% if g.owner %}
+<ul>
+    <li><a href="{{ url_for(".new_recipe") }}">New recipe</a></li>
+    <li><a href="{{ url_for(".import_recipe") }}">Import recipe</a></li>
+    <li><a href="{{ url_for(".account_settings") }}">Account settings</a></li>
+</ul>
+{% endif %}
+
 {% if recipes|length == 0 %}
   <p>{{ user.display_name() }} has not added any recipes yet.</p>
 {% else %}
