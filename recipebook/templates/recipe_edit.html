@@ -36,9 +36,14 @@ function addIngredient(groupId) {
     var newId = ingredientName(groupId, index);
     var tds = new Array();
     for (i=0; i<ingredientProperties.length; i++) {
+        if (ingredientProperties[i] == "amount") {
+            var inputType = 'type="number", min=0.0, step="any"';
+        } else {
+            var inputType = 'type="text"';
+        }
         tds[i] = '<td><input id="' +newId + '-' + ingredientProperties[i] +
-            '" name="' + newId + '-' + ingredientProperties[i] +
-            '" type="text" value="" /></td>';
+            '" name="' + newId + '-' + ingredientProperties[i] + '" ' +
+            inputType + '  value="" /></td>';
     }
     newIngredientRow.innerHTML = tds.join('') +
     '<td><a href="#remove_ingredient" onClick="' +
@@ -147,7 +152,7 @@ function renumberIngredients(tbody, groupId, startIndex) {
 
 {% macro ingredient_row(ingredient, index) %}
 <tr>
-    <td>{{ ingredient.amount() }}</td>
+    <td>{{ ingredient.amount(min=0.0, step="any") }}</td>
     <td>{{ ingredient.measure() }}</td>
     <td>{{ ingredient.item() }}</td>
     <td>{% if (index + 1) > form.MIN_INGREDIENTS %}

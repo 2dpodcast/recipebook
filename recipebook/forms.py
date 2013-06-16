@@ -2,6 +2,7 @@ import os
 import re
 
 from flask.ext.wtf import Form
+from flask.ext.wtf import html5
 import wtforms as wtf
 
 from recipebook.models import User, get_user, slugify
@@ -100,7 +101,7 @@ RECIPE_MAX_GROUPS = 20
 
 
 class IngredientForm(Form):
-    amount = wtf.DecimalField("Amount", validators=[wtf.validators.Optional()])
+    amount = html5.DecimalField("Amount", validators=[wtf.validators.Optional()])
     measure = wtf.TextField("Measure")
     item = wtf.TextField(
             "Ingredient", validators=[wtf.validators.Required(
