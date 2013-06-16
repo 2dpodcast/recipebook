@@ -28,7 +28,7 @@ function ingredientName(groupId, index) {
 
 var ingredientProperties = ["amount", "measure", "item"];
 
-function addIngredient(groupId, removable) {
+function addIngredient(groupId) {
     var tbody = document.getElementById(
             groupId).getElementsByTagName('tbody')[0];
     var index = tbody.getElementsByTagName("tr").length - 1;  // skip header
@@ -40,15 +40,10 @@ function addIngredient(groupId, removable) {
             '" name="' + newId + '-' + ingredientProperties[i] +
             '" type="text" value="" /></td>';
     }
-    if (removable) {
-        var finalCol = '<a href="#remove_ingredient" onClick="' +
-        'removeIngredient(\'' + groupId + '\', ' + index + ');">' +
-        'Remove ingredient</a>';
-    } else {
-        var finalCol = ''
-    }
     newIngredientRow.innerHTML = tds.join('') +
-        '<td>' + finalCol + '</td>';
+    '<td><a href="#remove_ingredient" onClick="' +
+    'removeIngredient(\'' + groupId + '\', ' + index + ');">' +
+    'Remove ingredient</a></td>';
     tbody.appendChild(newIngredientRow);
 }
 
@@ -66,15 +61,15 @@ function addIngredientGroup(groupsDivId) {
         '<th>Amount</th><th>Measure</th><th>Ingredient</th></tr>' +
         '</tbody></table>' +
         '<a href="#add_ingredient" onClick="' +
-            'addIngredient(\'' + newId + '\', true);">' +
+            'addIngredient(\'' + newId + '\');">' +
             'Add another ingredient</a><br />' +
         '<a href="#remove_group" onClick="' +
             'removeGroup(\'' + newId + '\');">' +
             'Remove this group</a>';
     newGroup.innerHTML = innerHTML;
     groupsDiv.appendChild(newGroup);
-    for (i=0; i<{{ form.MIN_INGREDIENTS }}; i++) {
-        addIngredient(newId, false);
+    for (i=0; i<{{ form.START_NUM_INGREDIENTS }}; i++) {
+        addIngredient(newId);
     }
 }
 
@@ -91,7 +86,7 @@ function removeIngredient(groupId, index) {
     // Have to account for the header row, which is 0th item
     var row = tbody.getElementsByTagName('tr')[index + 1];
     tbody.removeChild(row);
-    renumberIngredients(tbody, groupId);
+    renumberIngredients(tbody, groupId, index);
 }
 
 function renumberGroups(groupsDiv) {
@@ -108,25 +103,25 @@ function renumberGroups(groupsDiv) {
                 links[j].setAttribute(
                         'onClick', 'removeGroup("' + newId + '");');
             } else if (href == '#add_ingredient') {
-                if (j>{{ form.MIN_INGREDIENTS }}) {
+                if (j>{{ form.START_NUM_INGREDIENTS }}) {
                     links[j].setAttribute(
-                            'onClick', 'addIngredient("' + newId + '", true);');
+                            'onClick', 'addIngredient("' + newId + '");');
                 } else {
                     links[j].setAttribute(
-                            'onClick', 'addIngredient("' + newId + '", false);');
+                            'onClick', 'addIngredient("' + newId + '");');
                 }
             }
         }
         // Also need to change ids and names of ingredients
         var tbody = fieldsets[i].getElementsByTagName('tbody')[0];
-        renumberIngredients(tbody, newId);
+        renumberIngredients(tbody, newId, 0);
     }
 }
 
-function renumberIngredients(tbody, groupId) {
+function renumberIngredients(tbody, groupId, startIndex) {
     var rows = tbody.getElementsByTagName("tr");
     // Start at 1 to skip header row
-    for (i=1; i<rows.length; i++) {
+    for (i=1+startIndex; i<rows.length; i++) {
         var newId = ingredientName(groupId, i - 1);
         var inputs = rows[i].getElementsByTagName("input");
         // update the input ids and names
@@ -217,7 +212,7 @@ function renumberIngredients(tbody, groupId) {
     </table>
     </fieldset>
     <a href="#add_ingredient"
-        onClick="addIngredient('general_ingredients', true);">
+        onClick="addIngredient('general_ingredients');">
         Add another ingredient</a>
 
     <div id="ingredient_groups">
@@ -234,7 +229,7 @@ function renumberIngredients(tbody, groupId) {
             {% endfor %}
         </tbody>
         </table>
-        <a href="#add_ingredient" onClick="addIngredient('{{ group_id }}', true);">
+        <a href="#add_ingredient" onClick="addIngredient('{{ group_id }}');">
             Add another ingredient</a>
         {% if loop.index > form.MIN_GROUPS %}
             <br />
