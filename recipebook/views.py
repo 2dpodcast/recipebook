@@ -68,6 +68,7 @@ def register():
                     level=models.User.USER)
             user.set_password(form.password.data)
             user.save()
+            flash(u"Successfully registered account %s." % form.username.data)
             return redirect(url_for('recipes.login'))
         else:
             return (render_template('register.html', form=form), 422)
