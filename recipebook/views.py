@@ -40,7 +40,7 @@ def login():
     form = forms.Login(csrf_enabled=config.CSRF_ENABLED)
     if request.method == 'POST':
         if form.validate():
-            flash(u'Successfully logged in as %s' % form.user.username)
+            flash(u"Successfully logged in as %s." % form.user.username)
             session['user_id'] = form.user.username
             return redirect(url_for('recipes.index'))
         else:
@@ -66,6 +66,7 @@ def register():
 @recipes.route('/logout')
 def logout():
     session.pop('user_id', None)
+    flash(u"Successfully logged out.")
     return redirect(url_for('recipes.index'))
 
 
@@ -121,6 +122,7 @@ def edit_recipe(username, recipe_slug):
     if request.method == 'POST':
         if form.validate():
             form.save_recipe(user_recipe)
+            flash(u"Recipe successfully edited.")
             return redirect(url_for(
                 'recipes.recipe', username=username, recipe_slug=recipe_slug))
         else:
@@ -141,6 +143,7 @@ def new_recipe():
         if form.validate():
             user_recipe = models.Recipe(user=g.user)
             form.save_recipe(user_recipe)
+            flash(u"New recipe successfully created.")
             return redirect(url_for(
                 'recipes.recipe', username=g.user.username,
                 recipe_slug=user_recipe.title_slug))
@@ -178,6 +181,7 @@ def account_settings():
     if request.method == 'POST':
         if form.validate():
             form.update_user()
+            flash(u"Account settings saved.")
             return redirect(url_for(
                 'recipes.user_recipes', username=g.user.username,))
         else:
