@@ -122,7 +122,7 @@ def edit_recipe(username, recipe_slug):
     if request.method == 'POST':
         if form.validate():
             form.save_recipe(user_recipe)
-            flash(u"Recipe successfully edited.")
+            flash(u"Recipe successfully saved.")
             return redirect(url_for(
                 'recipes.recipe', username=username, recipe_slug=recipe_slug))
         else:
@@ -143,7 +143,7 @@ def new_recipe():
         if form.validate():
             user_recipe = models.Recipe(user=g.user)
             form.save_recipe(user_recipe)
-            flash(u"New recipe successfully created.")
+            flash(u"Recipe successfully saved.")
             return redirect(url_for(
                 'recipes.recipe', username=g.user.username,
                 recipe_slug=user_recipe.title_slug))

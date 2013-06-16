@@ -24,6 +24,7 @@ div.container {
     margin: 0 auto;
     width: 800px;
     text-align: left;
+    position: relative;
 }
 
 /* Header */
@@ -102,4 +103,22 @@ a:hover {
 div.form_field {
     width: 65%;
     margin-bottom: 1em;
+}
+
+/* Flashed messages */
+#flashes {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    position: absolute;
+    top: 0.8em;
+    right: 0;
+}
+
+#flashes li {
+    margin: 0;
+    padding: 0.4em 0.8em;
+    background-color: #9bdfba;
+    border: solid 1px #138849;
+    border-radius: 3px;
 }
