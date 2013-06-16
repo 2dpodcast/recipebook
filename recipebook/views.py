@@ -71,9 +71,8 @@ def logout():
 
 @recipes.route('/<username>')
 def user_recipes(username):
-    try:
-        user = models.User.objects.with_id(username)
-    except DoesNotExist:
+    user = models.User.objects.with_id(username)
+    if user is None:
         abort(404)
     recipes = models.Recipe.objects(user=user).order_by('-date_added')
     if g.user is not None and g.user.id == user.id:
@@ -84,9 +83,8 @@ def user_recipes(username):
 
 @recipes.route('/<username>/<recipe_slug>')
 def recipe(username, recipe_slug):
-    try:
-        user = models.User.objects.with_id(username)
-    except DoesNotExist:
+    user = models.User.objects.with_id(username)
+    if user is None:
         abort(404)
     if g.user is not None and g.user.username == user.username:
         g.owner = True
@@ -100,9 +98,8 @@ def recipe(username, recipe_slug):
 
 @recipes.route('/<username>/<recipe_slug>/edit', methods=('GET', 'POST'))
 def edit_recipe(username, recipe_slug):
-    try:
-        user = models.User.objects.with_id(username)
-    except DoesNotExist:
+    user = models.User.objects.with_id(username)
+    if user is None:
         abort(404)
     if g.user is not None and g.user.username == user.username:
         g.owner = True
