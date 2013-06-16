@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% from '_macros.html' import field_with_errors %}
 
+{# Disable redirecturl, as user can't edit after logging out #}
+{% set disable_redirecturl = True %}
+
 {% block title %}
 {% if recipe %}
 RecipeBook - Editing {{ recipe.title }}

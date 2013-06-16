@@ -22,11 +22,20 @@
   <div class="container">
 
   <h1><a href="{{ url_for('recipes.index') }}">Recipe Book</a></h1>
-  <p>{% if g.user %}
-    <a href="{{ url_for('recipes.logout') }}">Logout {{ g.user.username }}</a>
+
+  {% if not redirecturl %}
+  {% set redirecturl = request.path %}
+  {% endif %}
+  {% if disable_redirecturl %}
+  {% set redirecturlarg = "" %}
   {% else %}
-    <a href="{{ url_for('recipes.register') }}">Register</a> &middot;
-    <a href="{{ url_for('recipes.login') }}">Login</a>
+  {% set redirecturlarg = "?redirecturl=" + redirecturl %}
+  {% endif %}
+  <p>{% if g.user %}
+    <a href="{{ url_for('recipes.logout') }}{{ redirecturlarg }}">Logout {{ g.user.username }}</a>
+  {% else %}
+    <a href="{{ url_for('recipes.register') }}{{ redirecturlarg }}">Register</a> &middot;
+    <a href="{{ url_for('recipes.login') }}{{ redirecturlarg }}">Login</a>
   {% endif %}</p>
 
   </div>

@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% from '_macros.html' import field_with_errors %}
 
+{# In case user clicks login link from login url #}
+{% if request.args.redirecturl %}{% set redirecturl = request.args.redirecturl %}{% endif %}
+
 {% block title %}
 RecipeBook - Login
 {% endblock title %}
@@ -10,6 +13,7 @@ RecipeBook - Login
   {{ form.csrf_token }}
   {{ field_with_errors(form.login, size=25, autofocus="autofocus") }}
   {{ field_with_errors(form.password, size=25) }}
+  <input type="hidden" name="redirecturl" value="{{ redirecturl }}" />
   <p><input type="submit" value="Login"></p>
 </form>
 {% endblock content %}

@@ -42,10 +42,18 @@ def login():
         if form.validate():
             flash(u"Successfully logged in as %s." % form.user.username)
             session['user_id'] = form.user.username
-            return redirect(url_for('recipes.index'))
+            if 'redirecturl' in request.form:
+                return redirect(request.form['redirecturl'])
+            else:
+                return redirect(url_for('recipes.index'))
         else:
             return render_template('login.html', form=form), 422
-    return render_template('login.html', form=form)
+    else:
+        if 'redirecturl' in request.args:
+            redirecturl = request.args['redirecturl']
+        else:
+            redirecturl = url_for('recipes.index')
+        return render_template('login.html', form=form, redirecturl=redirecturl)
 
 
 @recipes.route('/register', methods=('GET', 'POST'))
@@ -67,7 +75,11 @@ def register():
 def logout():
     session.pop('user_id', None)
     flash(u"Successfully logged out.")
-    return redirect(url_for('recipes.index'))
+    if 'redirecturl' in request.args:
+        print request.args['redirecturl']
+        return redirect(request.args['redirecturl'])
+    else:
+        return redirect(url_for('recipes.index'))
 
 
 @recipes.route('/<username>')
