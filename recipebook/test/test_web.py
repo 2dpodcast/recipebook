@@ -75,9 +75,14 @@ class RecipebookTestCase(unittest.TestCase):
                 'realname': 'Tester',
                 'password': '12345'},
             follow_redirects=True)
-        assert 'not allowed' in rv.data
-        self.assertRaises(
-                DoesNotExist, models.User.objects(email=test_email).get)
+        assert rv.status_code == 422
+        rv = self.client.post('/register', data={
+                'email': test_email,
+                'username': 'invalid%name',
+                'realname': 'Tester',
+                'password': '12345'},
+            follow_redirects=True)
+        assert rv.status_code == 422
 
     def test_add_users(self):
         admin_user = models.User.objects.with_id('admin')

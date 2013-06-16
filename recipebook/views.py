@@ -59,16 +59,20 @@ def login():
 @recipes.route('/register', methods=('GET', 'POST'))
 def register():
     form = forms.Register(csrf_enabled=config.CSRF_ENABLED)
-    if request.method == 'POST' and form.validate():
-        user = models.User(
-                email=form.email.data,
-                username=form.username.data,
-                real_name=form.realname.data,
-                level=models.User.USER)
-        user.set_password(form.password.data)
-        user.save()
-        return redirect(url_for('recipes.login'))
-    return render_template('register.html', form=form)
+    if request.method == 'POST':
+        if form.validate():
+            user = models.User(
+                    email=form.email.data,
+                    username=form.username.data,
+                    real_name=form.realname.data,
+                    level=models.User.USER)
+            user.set_password(form.password.data)
+            user.save()
+            return redirect(url_for('recipes.login'))
+        else:
+            return (render_template('register.html', form=form), 422)
+    else:
+        return render_template('register.html', form=form)
 
 
 @recipes.route('/logout')

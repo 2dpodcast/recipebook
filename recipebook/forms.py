@@ -10,7 +10,7 @@ from recipebook import config, models, photos
 
 
 def valid_username(form, field):
-    if not re.match(r'[a-zA-Z0-9_\-]+', field.data):
+    if not re.match(r'^[a-zA-Z0-9_\-]+$', field.data):
         raise wtf.ValidationError("User name may contain only alphanumeric "
             "characters, hyphens and underscores")
 
