@@ -98,6 +98,7 @@ class Recipe(Document):
     ingredient_groups = ListField(EmbeddedDocumentField(IngredientGroup))
     date_added = DateTimeField(required=True)
     date_modified = DateTimeField(required=True)
+    tags = ListField(StringField())
 
     meta = {
             'collection': 'recipes',

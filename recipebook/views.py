@@ -35,6 +35,16 @@ def index():
     return render_template('index.html', recipes=latest_recipes)
 
 
+@recipes.route('/tag/<tagname>')
+def tag(tagname):
+    filters = {
+        'tags__contains': tagname
+    }
+    tagged_recipes = (models.Recipe.objects.filter(**filters).
+        order_by('-date_added').limit(config.NUMBER_HOME_RECIPES))
+    return render_template('tag.html', recipes=tagged_recipes, tag=tagname)
+
+
 @recipes.route('/login', methods=('GET', 'POST'))
 def login():
     form = forms.Login(csrf_enabled=config.CSRF_ENABLED)

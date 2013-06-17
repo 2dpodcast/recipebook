@@ -57,6 +57,14 @@ def load_gourmet(gourmet_file):
         else:
             image_name = ''
 
+        tags = []
+        category = recipe_elem.find('category')
+        if category is not None:
+            tags.append(category.text.strip())
+        cuisine = recipe_elem.find('cuisine')
+        if cuisine is not None:
+            tags.append(cuisine.text.strip())
+
         recipe = Recipe(
                 title=title,
                 title_slug=slugify(title),
@@ -65,7 +73,8 @@ def load_gourmet(gourmet_file):
                 date_added=datetime.datetime.utcnow(),
                 general_ingredients=general_ingredients,
                 ingredient_groups=ingredient_groups,
-                photo=image_name)
+                photo=image_name,
+                tags=tags)
         yield recipe
 
 

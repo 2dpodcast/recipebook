@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import recipe_preview %}
+
+{% block content %}
+<h1>Recipes Tagged &ldquo;{{ tag }}&rdquo;</h1>
+{% if recipes %}
+    {% for recipe in recipes %}
+        {{ recipe_preview(recipe) }}
+    {% endfor %}
+{% else %}
+<p>No recipes found with that tag sorry.</p>
+{% endif %}
+{% endblock content %}

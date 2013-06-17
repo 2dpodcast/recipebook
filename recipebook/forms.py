@@ -192,6 +192,29 @@ class IngredientGroup(Form):
         return ingredient_group
 
 
+class TagListField(wtf.Field):
+    widget = wtf.widgets.TextInput()
+
+    def _value(self):
+        if self.data:
+            return u', '.join(self.data)
+        else:
+            return u''
+
+    def process_formdata(self, values):
+        if values:
+            self.data = [val.strip() for val in values[0].split(',')]
+        else:
+            self.data = []
+
+
+def valid_tags(form, field):
+    for tag in field.data:
+        if not re.match(r'^[a-zA-Z0-9\- ]+$', tag):
+            raise wtf.ValidationError("Tags may contain only alphanumeric "
+                "characters, spaces and hyphens")
+
+
 class RecipeEdit(Form):
     START_NUM_INGREDIENTS = RECIPE_START_NUM_INGREDIENTS
     MIN_INGREDIENTS = RECIPE_MIN_INGREDIENTS
@@ -201,6 +224,7 @@ class RecipeEdit(Form):
     description = wtf.TextAreaField("Description")
     instructions = wtf.TextAreaField("Instructions")
     photo = wtf.FileField("Photo", validators=[valid_photo])
+    tags = TagListField("Tags", validators=[valid_tags])
     general_ingredients = wtf.FieldList(
             wtf.FormField(IngredientForm),
             min_entries=RECIPE_MIN_INGREDIENTS,
@@ -222,6 +246,7 @@ class RecipeEdit(Form):
         kwargs['ingredient_groups'] = [
                 IngredientGroup.from_model(g)
                 for g in recipe.ingredient_groups]
+        kwargs['tags'] = recipe.tags
         return cls(*args, **kwargs)
 
     def save_recipe(self, recipe):
@@ -240,6 +265,7 @@ class RecipeEdit(Form):
                 i.to_model() for i in self.general_ingredients]
         recipe.ingredient_groups = [
             g.to_model() for g in self.ingredient_groups]
+        recipe.tags = self.tags.data
 
         recipe.save()
 

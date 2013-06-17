@@ -21,6 +21,8 @@ RecipeBook - {{ recipe.title }}
 
 {% if recipe.description %}<p>{{recipe.description }}</p>{% endif %}
 
+{% if recipe.tags %}<p>Tagged: {{ recipe.tags | join(', ') }}</p>{% endif %}
+
 <h2>Ingredients</h2>
 
 {% for ingredient_group in recipe.ingredient_groups %}

@@ -22,6 +22,7 @@ class RecipeView(object):
         self.user = recipe.user
         self.photo = recipe.photo
         self.description = recipe.description
+        self.tags = recipe.tags
 
         self.ingredient_groups = [
                 IngredientGroupView(group)
