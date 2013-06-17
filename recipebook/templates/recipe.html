@@ -16,7 +16,7 @@ RecipeBook - {{ recipe.title }}
 {% endif %}
 
 {% if recipe.photo %}
-<p><img src="{{ recipe.show_photo(250,180) }}" width="250" height="180" /></p>
+<p><img src="{{ recipe.photo | show_photo(250,180) }}" width="250" height="180" /></p>
 {% endif %}
 
 {% if recipe.description %}<p>{{recipe.description }}</p>{% endif %}
@@ -29,7 +29,7 @@ RecipeBook - {{ recipe.title }}
 <h3>{{ ingredient_group.title }}</h3>
 <ul>
 {% for ingredient in ingredient_group.ingredients %}
-<li>{{ ingredient|safe }}</li>
+<li>{{ ingredient | render_ingredient | safe }}</li>
 {% endfor %}
 </ul>
 {% endfor %}
@@ -37,13 +37,13 @@ RecipeBook - {{ recipe.title }}
 {% if recipe.general_ingredients %}
 <ul>
 {% for ingredient in recipe.general_ingredients %}
-<li>{{ ingredient|safe }}</li>
+<li>{{ ingredient | render_ingredient | safe }}</li>
 {% endfor %}
 </ul>
 {% endif %}
 
 <h2>Instructions</h2>
-{{ recipe.html_instructions()|safe }}
+{{ recipe.instructions | markdown | safe }}
 
 <footer>
 <p>Created by <a href="{{ url_for('.user_recipes', username=recipe.user.username) }}">{{ recipe.user.display_name() }}</a>.</p>

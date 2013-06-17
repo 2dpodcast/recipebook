@@ -1,5 +1,7 @@
 from flask import Flask
 
+from recipebook import renderers
+
 
 def create_app(config, testing=False):
     app = Flask('recipebook')
@@ -14,6 +16,14 @@ def create_app(config, testing=False):
         app.config['TESTING'] = True
     else:
         app.config['DATABASE'] = config.DATABASE
+
+    # Add template filters
+    filters = {
+        'render_ingredient': renderers.render_ingredient,
+        'show_photo': renderers.show_photo,
+        'markdown': renderers.markdown,
+    }
+    app.jinja_env.filters.update(filters)
 
     # Import all the views
     from recipebook import admin

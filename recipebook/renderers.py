@@ -5,50 +5,15 @@ Module used for rendering models before passing to templates
 from flask import escape
 import markdown2
 
-from recipebook.models import Recipe
 from recipebook import photos
 
 
-class RecipeView(object):
-    """
-    An html view of a recipe
-    """
-
-    def __init__(self, recipe):
-        self.recipe = recipe
-        # Copy attributes required for views
-        self.title = recipe.title
-        self.title_slug = recipe.title_slug
-        self.user = recipe.user
-        self.photo = recipe.photo
-        self.description = recipe.description
-        self.tags = recipe.tags
-
-        self.ingredient_groups = [
-                IngredientGroupView(group)
-                for group in recipe.ingredient_groups]
-
-        self.general_ingredients = [
-                render_ingredient(ingredient) for
-                ingredient in recipe.general_ingredients]
-
-    def show_photo(self, width, height):
-        return photos.url(self.recipe.photo, width, height)
-
-    def html_instructions(self):
-        return markdown2.markdown(escape(self.recipe.instructions))
+def markdown(text):
+    return markdown2.markdown(escape(text))
 
 
-class IngredientGroupView(object):
-    """
-    An html view of an ingredient group
-    """
-
-    def __init__(self, recipe_ingredient_group):
-        self.title = recipe_ingredient_group.title
-        self.ingredients = [
-                render_ingredient(ingredient) for
-                ingredient in recipe_ingredient_group.ingredients]
+def show_photo(photo_name, width, height):
+    return photos.url(photo_name, width, height)
 
 
 def render_ingredient(ingredient):
@@ -67,8 +32,7 @@ def render_ingredient(ingredient):
         measure = None
 
     item = escape(ingredient.item)
-    return " ".join(
-            s for s in (amount, measure, item) if s)
+    return " ".join(s for s in (amount, measure, item) if s)
 
 
 def render_amount(value):

@@ -6,7 +6,7 @@ from flask import (
 from mongoengine import connect
 from mongoengine.queryset import DoesNotExist
 
-from recipebook import config, forms, models, photos, renderers
+from recipebook import config, forms, models, photos
 
 
 recipes = Blueprint('recipes', __name__)
@@ -121,7 +121,7 @@ def recipe(username, recipe_slug):
     except DoesNotExist:
         abort(404)
     return render_template(
-            'recipe.html', user=user, recipe=renderers.RecipeView(recipe))
+            'recipe.html', user=user, recipe=recipe)
 
 
 @recipes.route('/<username>/<recipe_slug>/edit', methods=('GET', 'POST'))
