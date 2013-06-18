@@ -10,6 +10,16 @@ from recipebook.test import example_recipes
 from fabric.api import *
 
 
+def build():
+    # Build static files
+    less_files = ['screen.less']
+    input_dir = './recipebook/style/'
+    output_dir = './recipebook/static/'
+    for less_file in less_files:
+        output = output_dir + less_file.replace('.less', '.css')
+        local('lessc %s > %s' % (input_dir + less_file, output))
+
+
 def _connect():
     # Connect with mongoengine
     connect(config.DATABASE,
