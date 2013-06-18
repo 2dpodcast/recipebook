@@ -203,7 +203,8 @@ class TagListField(wtf.Field):
 
     def process_formdata(self, values):
         if values:
-            self.data = [val.strip() for val in values[0].split(',')]
+            self.data = [
+                    val.strip() for val in values[0].split(',') if val.strip()]
         else:
             self.data = []
 
