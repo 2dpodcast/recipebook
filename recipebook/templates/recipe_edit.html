@@ -34,8 +34,9 @@ var ingredientProperties = ["amount", "measure", "item"];
 function addIngredient(groupId) {
     var tbody = document.getElementById(
             groupId).getElementsByTagName('tbody')[0];
-    var index = tbody.getElementsByTagName("tr").length - 1;  // skip header
+    var index = tbody.children.length - 1;  // skip header
     var newIngredientRow = document.createElement('tr');
+    newIngredientRow.className = "ingredient_row";
     var newId = ingredientName(groupId, index);
     var tds = new Array();
     for (i=0; i<ingredientProperties.length; i++) {
@@ -94,7 +95,7 @@ function removeIngredient(groupId, index) {
     var tbody = document.getElementById(
             groupId).getElementsByTagName('tbody')[0];
     // Have to account for the header row, which is 0th item
-    var row = tbody.getElementsByTagName('tr')[index + 1];
+    var row = tbody.children[index + 1];
     tbody.removeChild(row);
     renumberIngredients(tbody, groupId, index);
 }
@@ -129,7 +130,7 @@ function renumberGroups(groupsDiv) {
 }
 
 function renumberIngredients(tbody, groupId, startIndex) {
-    var rows = tbody.getElementsByTagName("tr");
+    var rows = tbody.children;
     // Start at 1 to skip header row
     for (i=1+startIndex; i<rows.length; i++) {
         var newId = ingredientName(groupId, i - 1);
@@ -156,7 +157,12 @@ function renumberIngredients(tbody, groupId, startIndex) {
 {% endblock scripts %}
 
 {% macro ingredient_row(ingredient, index, group) %}
-<tr>
+
+{% if ingredient.errors %}
+<tr><td colspan=4><table>
+{% endif %}
+
+<tr class="ingredient_row">
     <td>{{ ingredient.amount(class="amount", min=0.0, step="any") }}</td>
     <td>{{ ingredient.measure(class="measure") }}</td>
     <td>{{ ingredient.item(class="item") }}</td>
@@ -166,7 +172,7 @@ function renumberIngredients(tbody, groupId, startIndex) {
             Remove ingredient</a>
     {% endif %}</td>
 </tr>
-{% if ingredient.amount.errors or ingredient.measure.errors or ingredient.item.errors %}
+{% if ingredient.errors %}
 <tr class="errors">
     <td colspan=3>
         <ul class="errors">
@@ -176,7 +182,9 @@ function renumberIngredients(tbody, groupId, startIndex) {
         </ul>
     </td>
 </tr>
+</table></td></tr>
 {% endif %}
+
 {% endmacro %}
 
 {% block content %}
@@ -230,10 +238,7 @@ function renumberIngredients(tbody, groupId, startIndex) {
     {% for ingredient_group in form.ingredient_groups.entries %}
         {% set group_id = "ingredient_groups-%d" % (loop.index - 1) %}
         <fieldset id="{{ group_id }}">
-        <div class="form_field">
-        {{ ingredient_group.title.label }}<br />
-        {{ ingredient_group.title() }}
-        </div>
+        {{ field_with_errors(ingredient_group.title) }}
         <table>
         <tbody>
             <tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>
