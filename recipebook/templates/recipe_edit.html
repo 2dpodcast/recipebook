@@ -153,14 +153,14 @@ function renumberIngredients(tbody, groupId, startIndex) {
 </script>
 {% endblock scripts %}
 
-{% macro ingredient_row(ingredient, index) %}
+{% macro ingredient_row(ingredient, index, group) %}
 <tr>
     <td>{{ ingredient.amount(min=0.0, step="any") }}</td>
     <td>{{ ingredient.measure() }}</td>
     <td>{{ ingredient.item() }}</td>
     <td>{% if (index + 1) > form.MIN_INGREDIENTS %}
         <a href="#remove_ingredient"
-            onClick="removeIngredient('general_ingredients', {{ index }});">
+            onClick="removeIngredient('{{ group }}', {{ index }});">
             Remove ingredient</a>
     {% endif %}</td>
 </tr>
@@ -215,8 +215,9 @@ function renumberIngredients(tbody, groupId, startIndex) {
     <table>
     <tbody>
         <tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>
+        {% set group_id = "general_ingredients" %}
         {% for ingredient in form.general_ingredients.entries %}
-            {{ ingredient_row(ingredient, (loop.index - 1)) }}
+            {{ ingredient_row(ingredient, (loop.index - 1), group_id) }}
         {% endfor %}
     </tbody>
     </table>
@@ -235,7 +236,7 @@ function renumberIngredients(tbody, groupId, startIndex) {
         <tbody>
             <tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>
             {% for ingredient in ingredient_group.ingredients.entries %}
-                {{ ingredient_row(ingredient, (loop.index - 1)) }}
+                {{ ingredient_row(ingredient, (loop.index - 1), group_id) }}
             {% endfor %}
         </tbody>
         </table>
