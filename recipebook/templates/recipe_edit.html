@@ -46,7 +46,8 @@ function addIngredient(groupId) {
         }
         tds[i] = '<td><input id="' +newId + '-' + ingredientProperties[i] +
             '" name="' + newId + '-' + ingredientProperties[i] + '" ' +
-            inputType + '  value="" /></td>';
+            inputType + ' class="' + ingredientProperties[i] +
+            '" value="" /></td>';
     }
     newIngredientRow.innerHTML = tds.join('') +
     '<td><a href="#remove_ingredient" onClick="' +
@@ -62,9 +63,10 @@ function addIngredientGroup(groupsDivId) {
     var newId = groupName(groupCount);
     newGroup.id = newId;
 
-    innerHTML = '<label for="' + newId + '-title">Group title</label>' +
+    innerHTML = '<div class="form_field">' +
+        '<label for="' + newId + '-title">Ingredient group name</label><br />' +
         '<input id="' + newId + '-title" name="' + newId + '-title" ' +
-        'type="text" value="" />' +
+        'type="text" value="" /></div>' +
         '<table><tbody><tr>' +
         '<th>Amount</th><th>Measure</th><th>Ingredient</th></tr>' +
         '</tbody></table>' +
@@ -155,9 +157,9 @@ function renumberIngredients(tbody, groupId, startIndex) {
 
 {% macro ingredient_row(ingredient, index, group) %}
 <tr>
-    <td>{{ ingredient.amount(min=0.0, step="any") }}</td>
-    <td>{{ ingredient.measure() }}</td>
-    <td>{{ ingredient.item() }}</td>
+    <td>{{ ingredient.amount(class="amount", min=0.0, step="any") }}</td>
+    <td>{{ ingredient.measure(class="measure") }}</td>
+    <td>{{ ingredient.item(class="item") }}</td>
     <td>{% if (index + 1) > form.MIN_INGREDIENTS %}
         <a href="#remove_ingredient"
             onClick="removeIngredient('{{ group }}', {{ index }});">
@@ -166,14 +168,12 @@ function renumberIngredients(tbody, groupId, startIndex) {
 </tr>
 {% if ingredient.amount.errors or ingredient.measure.errors or ingredient.item.errors %}
 <tr class="errors">
-    <td>
-        {% for error in ingredient.amount.errors %}{{ error|e }}{% endfor %}
-    </td>
-    <td>
-        {% for error in ingredient.measure.errors %}{{ error|e }}{% endfor %}
-    </td>
-    <td>
-        {% for error in ingredient.item.errors %}{{ error|e }}{% endfor %}
+    <td colspan=3>
+        <ul class="errors">
+            {% for error in ingredient.amount.errors %}<li>{{ error|e }}</li>{% endfor %}
+            {% for error in ingredient.measure.errors %}<li>{{ error|e }}</li>{% endfor %}
+            {% for error in ingredient.item.errors %}<li>{{ error|e }}</li>{% endfor %}
+        </ul>
     </td>
 </tr>
 {% endif %}
@@ -194,7 +194,7 @@ function renumberIngredients(tbody, groupId, startIndex) {
 {% else %}
 <form action="{{ url_for( 'recipes.new_recipe' ) }}"
 {% endif %}
-    method="POST" enctype="multipart/form-data">
+    method="POST" enctype="multipart/form-data" class="fullpage">
 
     {{ form.csrf_token }}
 
@@ -202,7 +202,7 @@ function renumberIngredients(tbody, groupId, startIndex) {
 
     {{ field_with_errors(
             form.description,
-            style="width:300px", rows=6,
+            rows=6,
             autofocus="autofocus") }}
 
     {{ field_with_errors(form.photo) }}
@@ -221,17 +221,19 @@ function renumberIngredients(tbody, groupId, startIndex) {
         {% endfor %}
     </tbody>
     </table>
-    </fieldset>
     <a href="#add_ingredient"
         onClick="addIngredient('general_ingredients');">
         Add another ingredient</a>
+    </fieldset>
 
     <div id="ingredient_groups">
     {% for ingredient_group in form.ingredient_groups.entries %}
         {% set group_id = "ingredient_groups-%d" % (loop.index - 1) %}
         <fieldset id="{{ group_id }}">
-        {{ ingredient_group.title.label }}
+        <div class="form_field">
+        {{ ingredient_group.title.label }}<br />
         {{ ingredient_group.title() }}
+        </div>
         <table>
         <tbody>
             <tr><th>Amount</th><th>Measure</th><th>Ingredient</th></tr>
@@ -251,13 +253,15 @@ function renumberIngredients(tbody, groupId, startIndex) {
     {% endfor %}
 
     </div>
+    <p>
     <a href="#add_ingredient_group"
         onClick="addIngredientGroup('ingredient_groups');">
         Add an ingredient group</a>
+    </p>
 
     {{ field_with_errors(
         form.instructions,
-        style="width:300px", rows=6,
+        rows=12,
         autofocus="autofocus") }}
 
     <p><input type="submit" value="Save"></p>

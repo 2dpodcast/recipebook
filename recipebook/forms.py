@@ -154,8 +154,9 @@ class IngredientForm(Form):
 
 
 class IngredientGroup(Form):
-    title = wtf.TextField("Group title", validators=[wtf.validators.Required(
-            message="Ingredient group title is required")])
+    title = wtf.TextField("Ingredient group name",
+            validators=[wtf.validators.Required(
+                message="Ingredient group name is required")])
     ingredients = wtf.FieldList(
             wtf.FormField(IngredientForm),
             min_entries=RECIPE_MIN_INGREDIENTS,
@@ -221,7 +222,7 @@ class RecipeEdit(Form):
     MIN_INGREDIENTS = RECIPE_MIN_INGREDIENTS
     MIN_GROUPS = RECIPE_MIN_GROUPS
 
-    title = wtf.TextAreaField("Title")
+    title = wtf.TextField("Title")
     description = wtf.TextAreaField("Description")
     instructions = wtf.TextAreaField("Instructions")
     photo = wtf.FileField("Photo", validators=[valid_photo])
