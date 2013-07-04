@@ -25,7 +25,7 @@ Then initialise a database with some test data::
 
     fab populate
 
-To run tests everything::
+To run tests::
 
     fab test
 

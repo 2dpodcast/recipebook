@@ -59,4 +59,4 @@ def populate():
 def test():
     """Run tests"""
 
-    local('./env/bin/python recipebook/test/test_recipes.py')
+    local('./env/bin/nosetests')
