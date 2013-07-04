@@ -32,7 +32,8 @@ def before_request():
 def index():
     latest_recipes = (models.Recipe.objects.
         order_by('-date_added').limit(config.NUMBER_HOME_RECIPES))
-    return render_template('index.html', recipes=latest_recipes)
+    tags = models.Recipe.popularTags()
+    return render_template('index.html', recipes=latest_recipes, tags=tags)
 
 
 @recipes.route('/tag/<tagname>')

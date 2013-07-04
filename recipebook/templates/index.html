@@ -2,6 +2,12 @@
 {% from '_macros.html' import recipe_preview %}
 
 {% block content %}
+<h1>Tags</h1>
+<p>{% for tag in tags %}
+<a href="{{ url_for('.tag', tagname=tag.name) }}">{{ tag.name }}</a>{% if not loop.last %}, {% endif %}
+{% endfor %}
+</p>
+
 <h1>Latest Recipes</h1>
 {% for recipe in recipes %}
     {{ recipe_preview(recipe) }}

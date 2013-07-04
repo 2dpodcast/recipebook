@@ -5,7 +5,7 @@ from unicodedata import normalize
 
 import json
 from werkzeug import generate_password_hash, check_password_hash
-from bson import json_util
+from bson import json_util, Code
 from mongoengine import (
         Document, EmbeddedDocument, Q,
         StringField, EmailField, IntField, FloatField,
@@ -84,6 +84,37 @@ class IngredientGroup(EmbeddedDocument):
         return cls(title=title, ingredients=ingredients)
 
 
+tag_map_fn = Code("""function() {
+    if (!this.tags) {
+        return;
+    }
+    for (index in this.tags) {
+        emit(this.tags[index], 1);
+    }
+}""")
+
+tag_reduce_fn = Code("""function(tag, counts) {
+    var count = 0;
+    for (var i=0; i<counts.length; i++) {
+        count += counts[i];
+    }
+    return count;
+}""")
+
+
+class RecipeTag(Document):
+    _id = StringField(primary_key=True)
+    value = StringField()
+
+    meta = {
+            'collection': 'recipeTags',
+    }
+
+    @property
+    def name(self):
+        return self._id
+
+
 class Recipe(Document):
     """Represents a recipe document in the database"""
 
@@ -133,6 +164,16 @@ class Recipe(Document):
         if not self.date_added:
             self.date_added = self.date_modified
         super(Recipe, self).save()
+
+    @classmethod
+    def updateTags(cls):
+        return cls.objects.map_reduce(tag_map_fn, tag_reduce_fn,
+                "recipeTags")
+
+    @classmethod
+    def popularTags(cls):
+        cls.updateTags()
+        return RecipeTag.objects.order_by('-value')
 
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')

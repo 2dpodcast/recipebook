@@ -5,8 +5,8 @@ pillow>=2.0.0
 WTForms==1.0.3
 Werkzeug>=0.9
 markdown2==2.1.0
-mongoengine==0.7.9
-pymongo==2.4.2
+mongoengine==0.8.2
+pymongo==2.5.2
 wsgiref==0.1.2
 defusedxml
 nose
