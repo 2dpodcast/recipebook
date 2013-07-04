@@ -144,8 +144,7 @@ class RecipebookTestCase(unittest.TestCase):
 
         rv = self.login('admin')
         rv = self.client.get('/admin/example-recipe/edit')
-        title_input = ('<textarea id="title" name="title">'
-                'Example Recipe</textarea>')
+        title_input = ('value="Example Recipe"')
         ingredient_input = 'value="An ingredient"'
         ingredient_input_2 = 'value="cups"'
         assert title_input in rv.data
