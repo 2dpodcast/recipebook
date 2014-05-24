@@ -47,7 +47,7 @@ def add_admin():
 def populate():
     """Populate database with test data"""
     _connect()
-    _add_admin()
+    add_admin()
 
     for recipe_data in example_recipes.recipes:
         recipe = models.Recipe()
