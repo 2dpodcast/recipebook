@@ -1,25 +1,25 @@
 RecipeBook
 ==========
 
-A web application for sharing recipes.
+A web application for sharing recipes built with
+Flask and MongoDB.
 
-Just mucking around with the Flask web framework,
-this isn't usable.
-
+It is currently usable but still a work in progress.
 
 Getting Started with Development
 --------------------------------
 
-To set up a virtualenv for development::
+To set up a Python virtualenv for development::
 
     virtualenv --no-site-packages env
     source env/bin/activate
     pip install -r requirements.txt
 
-Extra packages required::
+To install MongoDB on Fedora::
 
     sudo yum install mongodb mongodb-server
     sudo systemctl enable mongod.service
+    sudo systemctl start mongod.service
 
 Then initialise a database with some test data::
 
